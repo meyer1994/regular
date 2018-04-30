@@ -67,6 +67,18 @@ class Grammar {
   static closure (rga) {
     throw new Error('TODO')
   }
+
+  static intersection (rga, rgb) {
+    throw new Error('TODO')
+  }
+
+  static diff (rga, rgb) {
+    throw new Error('TODO')
+  }
+
+  static reverse (rga, rgb) {
+    throw new Error('TODO')
+  }
 }
 
 module.exports = Grammar

@@ -7,6 +7,18 @@ class NDFA {
   toDFA () {
     throw new Error('TODO')
   }
+
+  static intersection (ndfa, ndfb) {
+    throw new Error('TODO')
+  }
+
+  static diff (ndfa, ndfb) {
+    throw new Error('TODO')
+  }
+
+  static reverse (ndfa, ndfb) {
+    throw new Error('TODO')
+  }
 }
 
 module.exports = NDFA

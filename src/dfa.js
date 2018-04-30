@@ -15,6 +15,18 @@ class DFA {
   static minimize (dfa) {
     throw new Error('TODO')
   }
+
+  static intersection (dfa, dfb) {
+    throw new Error('TODO')
+  }
+
+  static diff (dfa, dfb) {
+    throw new Error('TODO')
+  }
+
+  static reverse (dfa, dfb) {
+    throw new Error('TODO')
+  }
 }
 
 module.exports = DFA
