@@ -19,10 +19,69 @@ class Grammar {
    *   'A': ['aS']
    * }
    *
-   * @param  {Object} obj [description]
+   * @param  {Object} obj Object representing the regular grammar.
    */
-  constructor (obj) {
-    throw new Error('TODO')
+  constructor (first, obj) {
+    this.checkFormat(first, obj)
+  }
+
+  checkFormat (first, obj) {
+    const left = new Set(Object.keys(obj))
+
+    // String
+    if (typeof first !== 'string') {
+      throw new Error('first should be a string')
+    }
+
+    // Object
+    // copied from here, added De Morgan law to logic expression:
+    // https://stackoverflow.com/a/16608074/5092038
+    if ((!obj) || (obj.constructor !== Object)) {
+      throw new Error('obj should be an object ({})')
+    }
+
+    // Single uppercase letter
+    if (first.match(/^[A-Z]$/) === null) {
+      throw new Error('first should be a single uppercase letter')
+    }
+
+    // On left side
+    if (!left.has(first)) {
+      throw new Error('first should appear in left side')
+    }
+
+    // Left side
+    for (let item of left) {
+      // Length
+      if (item.length !== 1) {
+        throw new Error('length of left side should always be 1')
+      }
+
+      // Uppercase
+      if (item.match(/^[A-Z]$/) === null) {
+        throw new Error('left side should be a single uppercase letter')
+      }
+    }
+
+    // Right side
+    // First pdocution
+    // Recursive and has epslon
+    if (this.epslonRecursive(first, obj[first])) {
+      throw new Error('first production should not have epslon if recursive')
+    }
+  }
+
+  epslonRecursive (left, right) {
+    return this.isRecursive(left, right) && right.indexOf('&') !== -1
+  }
+
+  isRecursive (left, right) {
+    for (let item of right) {
+      if (item.length === 2 && item[1] === left) {
+        return true
+      }
+    }
+    return false
   }
 
   /**
@@ -78,6 +137,10 @@ class Grammar {
 
   static reverse (rga, rgb) {
     throw new Error('TODO')
+  }
+
+  isRegular () {
+    
   }
 }
 
