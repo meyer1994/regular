@@ -8,8 +8,8 @@ describe('NFA', function () {
       const accept = [ 'A' ]
       const table = {
         'S': { 'a': [ 'S', 'A' ], 'b': [ 'A' ], 'c': [ 'C' ] },
-        'A': { 'a': [ 'S', 'A' ], 'b': [ 'C' ] },
-        'C': {},
+        'A': { 'a': [ 'S', 'A' ], 'b': [ 'C' ], 'c': [ 'A' ] },
+        'C': { 'a': [ 'S', 'A' ], 'b': [ 'C' ], 'c': [ 'S' ] }
       }
       const alpha = new Set([ 'a', 'b', 'c' ])
 
@@ -63,7 +63,7 @@ describe('NFA', function () {
   })
 
   describe('#getTransitions', function () {
-    it('Should return the possible transitions from a list of states',  function () {
+    it('Should return the possible transitions from a list of states', function () {
       const start0 = 'S'
       const accept0 = [ 'C' ]
       const table0 = {
@@ -118,8 +118,8 @@ describe('NFA', function () {
       const start1 = 'q0'
       const accept1 = [ 'q2' ]
       const table1 = {
-        'q0': {'0': [ 'q0', 'q1' ], '1': [ 'q0' ] },
-        'q1': {'1': [ 'q2' ] },
+        'q0': { '0': [ 'q0', 'q1' ], '1': [ 'q0' ] },
+        'q1': { '1': [ 'q2' ] },
         'q2': {}
       }
       const nfa1 = new NFA(start1, accept1, table1)
