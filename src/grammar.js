@@ -21,7 +21,7 @@ class Grammar {
    *
    * @param  {Object} obj Object representing the regular grammar.
    */
-   constructor (first, productions) {
+  constructor (first, productions) {
     this.first = first
     this.productions = productions
   }
