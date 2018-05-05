@@ -1,0 +1,15 @@
+sudo: "false"  # it is supposed to make builds faster
+
+language: "node_js"
+python:
+  - "8"
+  - "9"
+  - "10"
+
+# command to install dependencies
+install:
+  - "npm install"
+
+# command to run tests
+script:
+  - "npm test"
