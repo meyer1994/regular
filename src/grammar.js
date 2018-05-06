@@ -43,7 +43,29 @@ class Grammar {
    * @return New Grammar object that represents
    */
   static fromNFA (nfa) {
-
+    const firstSymbol = nfa.start
+    const productions = {}
+    let aux
+    for (let state in nfa.table) {
+      aux = []
+      for (let terminalSymbol in nfa.table[state]) {
+        for (let nonTerminalSymbol of nfa.table[state][terminalSymbol]) {
+          aux.push(terminalSymbol + nonTerminalSymbol)
+          if (nfa.accept.has(nonTerminalSymbol) && aux.indexOf(nonTerminalSymbol) === -1) {
+            aux.push(terminalSymbol)
+          }
+        }
+      }
+      productions[state] = aux
+    }
+    // if language accepts epsilon, add apsilon to the grammar
+    if (nfa.accept.has(nfa.start)) {
+      const newFirstSymbol = firstSymbol + "'"
+      productions[newFirstSymbol] = Array.from(productions[firstSymbol])
+      productions[newFirstSymbol].push('&')
+      return new Grammar(newFirstSymbol, productions)
+    }
+    return new Grammar(firstSymbol, productions)
   }
 
   /**
