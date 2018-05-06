@@ -45,18 +45,18 @@ class Grammar {
   static fromNFA (nfa) {
     const firstSymbol = nfa.start
     const productions = {}
-    let aux
+    const aux = new Set()
     for (let state in nfa.table) {
-      aux = []
+      aux.clear()
       for (let terminalSymbol in nfa.table[state]) {
         for (let nonTerminalSymbol of nfa.table[state][terminalSymbol]) {
-          aux.push(terminalSymbol + nonTerminalSymbol)
-          if (nfa.accept.has(nonTerminalSymbol) && aux.indexOf(nonTerminalSymbol) === -1) {
-            aux.push(terminalSymbol)
+          aux.add(terminalSymbol + nonTerminalSymbol)
+          if (nfa.accept.has(nonTerminalSymbol)) {
+            aux.add(terminalSymbol)
           }
         }
       }
-      productions[state] = aux
+      productions[state] = Array.from(aux)
     }
     // if language accepts epsilon, add apsilon to the grammar
     if (nfa.accept.has(nfa.start)) {
