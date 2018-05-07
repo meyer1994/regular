@@ -9,6 +9,8 @@ node_js:
 # command to install dependencies
 install:
   - "npm install"
+  - "npm install -g codecov"
+  - "npm install -g istanbul"
 
 # command to run tests
 script:
@@ -16,4 +18,4 @@ script:
 
 # Send everything to codecov
 after_success:
-  - "bash <(curl -s https://codecov.io/bash)"
+  - "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && codecov"

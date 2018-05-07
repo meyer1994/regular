@@ -2,13 +2,17 @@
   "name": "regular",
   "dependencies": {},
   "devDependencies": {
+    "istanbul": "^0.4.5",
     "mocha": "^5.1.1",
     "standard": "^11.0.1"
   },
   "scripts": {
-    "test": "standard && mocha"
+    "test": "standard && istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec"
   },
   "standard": {
-    "globals": [ "describe", "it" ]
+    "globals": [
+      "describe",
+      "it"
+    ]
   }
 }
