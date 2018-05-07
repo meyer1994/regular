@@ -1,6 +1,5 @@
 {
   "name": "regular",
-  "version": "0.0",
   "dependencies": {},
   "devDependencies": {
     "mocha": "^5.1.1",
