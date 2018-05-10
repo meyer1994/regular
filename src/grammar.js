@@ -1,3 +1,4 @@
+const fs = require('fs')
 
 class Grammar {
   /**
@@ -136,6 +137,31 @@ class Grammar {
    */
   static reverse (rga) {
     throw new Error('TODO')
+  }
+
+  /**
+   * Open JSON File that represents a rga object.
+   *
+   * @param {string} path path to .json file.
+   *
+   * @return {Grammar}    Regular grammar that represents JSON file.
+   */
+  static open (path) {
+    const rawData = fs.readFileSync(path)
+    const grammar = JSON.parse(rawData)
+    return new Grammar(grammar.first, grammar.productions)
+  }
+
+  /**
+   * Save object into JSON file.
+   *
+   * @param {string} path path to .json file.
+   *
+   * @return {void} returns nothing.
+   */
+  save (path) {
+    const data = JSON.stringify(this, null, 2)
+    fs.writeFileSync(path, data)
   }
 }
 
