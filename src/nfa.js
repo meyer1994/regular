@@ -112,11 +112,6 @@ class NFA {
    * @brief Determinize the NFA, if non-deterministic.
    */
   determinize () {
-    // Nothing to do here
-    if (this.isDeterministic()) {
-      return this
-    }
-
     const newTable = {}
     const stack = [ [ this.start ] ]
 
@@ -129,7 +124,8 @@ class NFA {
 
       const transitions = this.getTransitions(currentStates)
       for (let char of transitions) {
-        const reachableStates = this.getReach(currentStates, char)
+        const reachableSet = this.getReach(currentStates, char)
+        const reachableStates = [...reachableSet].sort()
         const reachableName = reachableStates.join()
 
         if (!(reachableName in newTable)) {
@@ -163,19 +159,17 @@ class NFA {
    *
    * @param  {Array} states List of states to get the possible characters.
    *
-   * @return {Array} It will return a list, without repetitions of the possible
-   *                 transition characters from the list of states.
+   * @return {Set} Set containing the transitions.
    */
   getTransitions (states) {
     const set = new Set()
 
     for (let state of states) {
-      for (let transition in this.table[state]) {
-        set.add(transition)
-      }
+      const transitions = Object.keys(this.table[state])
+      transitions.forEach(i => set.add(i))
     }
 
-    return [...set].sort()
+    return set
   }
 
   /**
@@ -185,23 +179,20 @@ class NFA {
    * @param {Array}  states List of states to check for possible next states.
    * @param {String} char   Char to check for the transition.
    *
-   * @return {Array}        Sorted list, without repetitions, of the possible
-   *                        next states.
+   * @return {Set}  Set containing reahcable states.
    */
-  getReach (states, char) {
+  getReach (states, symbol) {
     const set = new Set()
 
-    for (let state of states) {
-      const nextState = this.table[state][char]
-      // If it exists
-      if (nextState !== undefined) {
-        for (let s of nextState) {
-          set.add(s)
-        }
-      }
+    // Removes states that do not have the passed symbol as a transition
+    const filteredStates = states.filter(i => symbol in this.table[i])
+
+    for (let state of filteredStates) {
+      const nextStates = this.table[state][symbol]
+      nextStates.forEach(i => set.add(i))
     }
 
-    return [...set].sort()
+    return set
   }
 
   static minimize (dfa) {
