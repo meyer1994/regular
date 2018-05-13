@@ -138,24 +138,8 @@ describe('NFA', function () {
     })
   })
 
-  describe('#getClosure', function () {
-    it('Should return the closure of some symbol', function () {
-      const start0 = 'S'
-      const accept0 = [ 'C' ]
-      const table0 = {
-        'S': { 'a': [ 'A', 'B' ] },
-        'A': { 'a': [ 'A', 'C' ] },
-        'B': { 'a': [ 'C' ], 'b': [ 'B' ] },
-        'C': {}
-      }
-      const nfa0 = new NFA(start0, accept0, table0)
-
-      const expected0 = new Set([ 'S', 'A', 'B', 'C' ])
-      const result0 = nfa0.getClosure([ 'S' ], 'a')
-      assert.deepStrictEqual(result0, expected0)
-    })
-
-    it('Should return the reachable states with only the epslon transition', function () {
+  describe('#getEpslonClosure', function () {
+    it('Should return the closure of epslon', function () {
       const nstart0 = 'A'
       const naccept0 = [ 'B' ]
       const ntable0 = {
@@ -167,7 +151,7 @@ describe('NFA', function () {
       const nfa0 = new NFA(nstart0, naccept0, ntable0)
 
       const expect0 = new Set([ 'A', 'B', 'C' ])
-      const result0 = nfa0.getClosure([ 'A' ], '&')
+      const result0 = nfa0.getEpslonClosure([ 'A' ])
       assert.deepStrictEqual(expect0, result0)
 
       // Fig. 2.21
@@ -188,7 +172,7 @@ describe('NFA', function () {
       const nfa1 = new NFA(nstart1, naccept1, ntable1)
 
       const expect1 = new Set([ '1', '2', '3', '4', '6' ])
-      const result1 = nfa1.getClosure([ '1' ], '&')
+      const result1 = nfa1.getEpslonClosure([ '1' ])
       assert.deepStrictEqual(expect1, result1)
     })
   })
@@ -257,9 +241,6 @@ describe('NFA', function () {
 
       const nfa0 = new NFA(start0, accept0, table0)
       nfa0.determinize()
-      console.log(nfa0.start)
-      console.log(nfa0.accept)
-      console.table(nfa0.table)
     })
   })
 

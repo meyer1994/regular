@@ -72,18 +72,12 @@ class NFA {
    */
   match (wordInput) {
     const word = wordInput.split('').reverse()
-    let states = this.getClosure([ this.start ], '&')
+    let states = this.getEpslonClosure([ this.start ])
 
     while (word.length > 0) {
       const char = word.pop()
-      const nextStates = new Set()
-
-      const x = this.getClosure(states, '&')
-
-      const y = this.getReach(x, char)
-      y.forEach(i => nextStates.add(i))
-
-      states = nextStates
+      const epslonClosure = this.getEpslonClosure(states)
+      states = this.getReach(epslonClosure, char)
     }
 
     for (let accept of this.accept) {
@@ -227,11 +221,11 @@ class NFA {
    * Gets the closure of a symbolm from a list of states.
    *
    * @param  {Iterable}  states List of states to start from.
-   * @param  {String}    symbol Symbol to get closure of.
    *
-   * @return {Set}        Set containing the closure of reach of the symbol.
+   * @return {Set}        Set containing the closure of reach of epslon.
    */
-  getClosure (states, symbol) {
+  getEpslonClosure (states) {
+    const symbol = '&'
     const set = new Set(states)
     const visited = new Set()
     const stack = [ Array.from(states) ]
