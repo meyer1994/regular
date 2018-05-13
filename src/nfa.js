@@ -64,6 +64,38 @@ class NFA {
   }
 
   /**
+   * Checks if some string is contained in the language of this automaton.
+   *
+   * @param  {String} wordInput String to check.
+   *
+   * @return {[type]}           True if it belongs, false otherwise.
+   */
+  match (wordInput) {
+    const word = wordInput.split('').reverse()
+    let states = this.getClosure([ this.start ], '&')
+
+    while (word.length > 0) {
+      const char = word.pop()
+      const nextStates = new Set()
+
+      const x = this.getClosure(states, '&')
+
+      const y = this.getReach(x, char)
+      y.forEach(i => nextStates.add(i))
+
+      states = nextStates
+    }
+
+    for (let accept of this.accept) {
+      if (states.has(accept)) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  /**
    * @brief Checks if the NFA is deterministic or not.
    *
    * An FA is deterministic if there is only one possible transition from one
@@ -155,7 +187,7 @@ class NFA {
   /**
    * @brief Gets the possible characters from a list of states.
    *
-   * @param  {Array} states List of states to get the possible characters.
+   * @param  {Iterable} states List of states to get the possible characters.
    *
    * @return {Set} Set containing the transitions.
    */
@@ -163,10 +195,10 @@ class NFA {
     const set = new Set()
 
     for (let state of states) {
-      const transitions = Object.keys(this.table[state])
-      transitions.forEach(i => set.add(i))
+      Object
+        .keys(this.table[state])
+        .forEach(i => set.add(i))
     }
-
     return set
   }
 
@@ -174,21 +206,18 @@ class NFA {
    * @brief Gets the possible states that are reachable from a list of states
    *        by some character.
    *
-   * @param {Array}  states List of states to check for possible next states.
-   * @param {String} char   Char to check for the transition.
+   * @param {Iterable}  states List of states to check for possible next states.
+   * @param {String}    char   Char to check for the transition.
    *
    * @return {Set}  Set containing reahcable states.
    */
   getReach (states, symbol) {
     const set = new Set()
-    states = Array.from(states)
 
-    // Removes states that do not have the passed symbol as a transition
-    const filteredStates = states.filter(i => symbol in this.table[i])
-
-    for (let state of filteredStates) {
-      const nextStates = this.table[state][symbol]
-      nextStates.forEach(i => set.add(i))
+    for (let state of states) {
+      if (symbol in this.table[state]) {
+        this.table[state][symbol].forEach(i => set.add(i))
+      }
     }
 
     return set
@@ -197,26 +226,26 @@ class NFA {
   /**
    * Gets the closure of a symbolm from a list of states.
    *
-   * @param  {Array}  states List of states to start from.
-   * @param  {String} symbol Symbol to get closure of.
+   * @param  {Iterable}  states List of states to start from.
+   * @param  {String}    symbol Symbol to get closure of.
    *
    * @return {Set}        Set containing the closure of reach of the symbol.
    */
   getClosure (states, symbol) {
-    const set = new Set()
-    const visitedStates = new Set()
+    const set = new Set(states)
+    const visited = new Set()
     const stack = [ Array.from(states) ]
 
     while (stack.length > 0) {
-      const notVisitedStates = stack
+      const notVisited = stack
         .pop()
-        .filter(i => !visitedStates.has(i))
+        .filter(i => !visited.has(i))
 
       // Visits states
-      notVisitedStates.forEach(i => visitedStates.add(i))
+      notVisited.forEach(i => visited.add(i))
 
       // Adds reach to set
-      const nextStates = this.getReach(notVisitedStates, symbol)
+      const nextStates = this.getReach(notVisited, symbol)
       nextStates.forEach(i => set.add(i))
       if (nextStates.size > 0) {
         stack.push(Array.from(nextStates))
