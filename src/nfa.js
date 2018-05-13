@@ -136,6 +136,8 @@ class NFA {
    * @brief Determinize the NFA, if non-deterministic.
    */
   determinize () {
+    this.removeEpslon()
+
     const newTable = {}
     const stack = [ [ this.start ] ]
 
@@ -193,6 +195,7 @@ class NFA {
         .keys(this.table[state])
         .forEach(i => set.add(i))
     }
+    set.delete('&')
     return set
   }
 
@@ -215,6 +218,62 @@ class NFA {
     }
 
     return set
+  }
+
+  /**
+   * Removes epslon transitions from automaton.
+   *
+   * It uses the algorithm described by Thompson, see
+   * https://en.wikipedia.org/wiki/Thompson%27s_construction for more info.
+   */
+  removeEpslon () {
+    const stack = [ this.getEpslonClosure([ this.start ]) ]
+    const visited = new Set()
+    const newTable = {}
+
+    while (stack.length > 0) {
+      const current = stack.pop()
+      const currentName = Array.from(current).sort().join()
+
+      newTable[currentName] = {}
+
+      const transitions = this.getTransitions(current)
+
+      for (let symbol of transitions) {
+        const reach = this.getReach(current, symbol)
+        const reachClosure = this.getEpslonClosure(reach)
+        const reachName = Array.from(reachClosure).sort().join()
+
+        newTable[currentName][symbol] = new Set([ reachName ])
+
+        if (!visited.has(reachName)) {
+          visited.add(reachName)
+          stack.push(reachClosure)
+        }
+      }
+    }
+
+    // Gets final states
+    const acceptStates = new Set()
+    for (let state in newTable) {
+      for (let accept of this.accept) {
+        const containsFinal = state.indexOf(accept) !== -1
+        if (containsFinal) {
+          acceptStates.add(state)
+          break
+        }
+      }
+    }
+
+    // Gets starting state
+    const newStart = Object
+      .keys(newTable)
+      .filter(i => i.split(',').indexOf(this.start) !== -1)
+
+    // Update object
+    this.start = newStart[0]
+    this.accept = acceptStates
+    this.table = newTable
   }
 
   /**
