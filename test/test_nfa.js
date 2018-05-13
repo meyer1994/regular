@@ -138,6 +138,57 @@ describe('NFA', function () {
     })
   })
 
+  describe('#removeEpslon', function () {
+    it('Should remove all epslon transitions, if any', function () {
+      const start0 = '1'
+      const accept0 = [ '15' ]
+      const table0 = {
+        '1': { '&': [ '2', '4' ] },
+        '2': { 'b': [ '3' ] },
+        '3': { '&': [ '6' ] },
+        '4': { '&': [ '5' ] },
+        '5': { '&': [ '6' ] },
+        '6': { '&': [ '7' ] },
+        '7': { '&': [ '8' ] },
+        '8': { '&': [ '9', '11', '15' ] },
+        '9': { 'a': [ '10' ] },
+        '10': { '&': [ '14' ] },
+        '11': { 'b': [ '12' ] },
+        '12': { 'c': [ '13' ] },
+        '13': { '&': [ '14' ] },
+        '14': { '&': [ '8', '15' ] },
+        '15': {}
+      }
+
+      const nfa0 = new NFA(start0, accept0, table0)
+
+      nfa0.removeEpslon()
+      const expected0 = {
+        '1,11,15,2,4,5,6,7,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '11,12,15,3,6,7,8,9' ])
+        },
+        '10,11,14,15,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '12' ])
+        },
+        '11,12,15,3,6,7,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '12' ]),
+          'c': new Set([ '11,13,14,15,8,9' ])
+        },
+        '12': {
+          'c': new Set([ '11,13,14,15,8,9' ])
+        },
+        '11,13,14,15,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '12' ])
+        }
+      }
+      assert.deepStrictEqual(nfa0.table, expected0)
+    })
+  })
+
   describe('#getEpslonClosure', function () {
     it('Should return the closure of epslon', function () {
       const nstart0 = 'A'
@@ -232,15 +283,51 @@ describe('NFA', function () {
 
     it('Should determinize NFA with epslon transitions', function () {
       const start0 = '1'
-      const accept0 = [ '2' ]
+      const accept0 = [ '15' ]
       const table0 = {
-        '1': { 'b': [ '2' ], '&': [ '3' ] },
-        '2': { 'a': [ '2', '3' ], 'b': [ '3' ] },
-        '3': { 'a': [ '1' ] }
+        '1': { '&': [ '2', '4' ] },
+        '2': { 'b': [ '3' ] },
+        '3': { '&': [ '6' ] },
+        '4': { '&': [ '5' ] },
+        '5': { '&': [ '6' ] },
+        '6': { '&': [ '7' ] },
+        '7': { '&': [ '8' ] },
+        '8': { '&': [ '9', '11', '15' ] },
+        '9': { 'a': [ '10' ] },
+        '10': { '&': [ '14' ] },
+        '11': { 'b': [ '12' ] },
+        '12': { 'c': [ '13' ] },
+        '13': { '&': [ '14' ] },
+        '14': { '&': [ '8', '15' ] },
+        '15': {}
       }
 
       const nfa0 = new NFA(start0, accept0, table0)
       nfa0.determinize()
+
+      const expected0 = {
+        '1,11,15,2,4,5,6,7,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '11,12,15,3,6,7,8,9' ])
+        },
+        '10,11,14,15,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '12' ])
+        },
+        '11,12,15,3,6,7,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '12' ]),
+          'c': new Set([ '11,13,14,15,8,9' ])
+        },
+        '12': {
+          'c': new Set([ '11,13,14,15,8,9' ])
+        },
+        '11,13,14,15,8,9': {
+          'a': new Set([ '10,11,14,15,8,9' ]),
+          'b': new Set([ '12' ])
+        }
+      }
+      assert.deepStrictEqual(nfa0.table, expected0)
     })
   })
 
