@@ -28,8 +28,8 @@ describe('NFA', function () {
       const nfa = new NFA(start, accept, table)
 
       const expect = {
-        'q0': { 'b': [ 'q1' ] },
-        'q1': { 'a': [ 'q2' ] },
+        'q0': { 'b': new Set([ 'q1' ]) },
+        'q1': { 'a': new Set([ 'q2' ]) },
         'q2': {}
       }
       assert.deepStrictEqual(nfa.table, expect)
@@ -74,17 +74,17 @@ describe('NFA', function () {
       }
       const nfa0 = new NFA(start0, accept0, table0)
 
-      const transitions0 = [ 'a' ]
+      const expected0 = new Set([ 'a' ])
       const result0 = nfa0.getTransitions([ 'S', 'A' ])
-      assert.deepStrictEqual(transitions0, result0)
+      assert.deepStrictEqual(expected0, result0)
 
-      const transitions1 = [ 'a', 'b' ]
+      const expected1 = new Set([ 'a', 'b' ])
       const result1 = nfa0.getTransitions([ 'B', 'C' ])
-      assert.deepStrictEqual(transitions1, result1)
+      assert.deepStrictEqual(expected1, result1)
 
-      const transitions2 = []
+      const expected2 = new Set([])
       const result2 = nfa0.getTransitions([ 'C' ])
-      assert.deepStrictEqual(transitions2, result2)
+      assert.deepStrictEqual(expected2, result2)
     })
   })
 
@@ -100,17 +100,17 @@ describe('NFA', function () {
       }
       const nfa0 = new NFA(start0, accept0, table0)
 
-      const reachable0 = [ 'A', 'B', 'C' ]
+      const expected0 = new Set([ 'A', 'B', 'C' ])
       const result0 = nfa0.getReach([ 'S', 'A' ], 'a')
-      assert.deepStrictEqual(reachable0, result0)
+      assert.deepStrictEqual(expected0, result0)
 
-      const reachable1 = [ 'A', 'C' ]
+      const expected1 = new Set([ 'A', 'C' ])
       const result1 = nfa0.getReach([ 'A', 'B' ], 'a')
-      assert.deepStrictEqual(reachable1, result1)
+      assert.deepStrictEqual(expected1, result1)
 
-      const reachable2 = [ 'B' ]
+      const expected2 = new Set([ 'B' ])
       const result2 = nfa0.getReach([ 'A', 'B' ], 'b')
-      assert.deepStrictEqual(reachable2, result2)
+      assert.deepStrictEqual(expected2, result2)
 
       // Figure 2.9
       // John E. Hopcroft, Rajeev Motwani, Jeffrey D. Ullman
@@ -124,17 +124,72 @@ describe('NFA', function () {
       }
       const nfa1 = new NFA(start1, accept1, table1)
 
-      const reachable3 = [ 'q0', 'q1' ]
+      const expected3 = new Set([ 'q0', 'q1' ])
       const result3 = nfa1.getReach([ 'q0', 'q1' ], '0')
-      assert.deepStrictEqual(reachable3, result3)
+      assert.deepStrictEqual(expected3, result3)
 
-      const reachable4 = [ 'q0', 'q1' ]
+      const expected4 = new Set([ 'q0', 'q1' ])
       const result4 = nfa1.getReach([ 'q0' ], '0')
-      assert.deepStrictEqual(reachable4, result4)
+      assert.deepStrictEqual(expected4, result4)
 
-      const reachable5 = [ 'q0', 'q2' ]
+      const expected5 = new Set([ 'q0', 'q2' ])
       const result5 = nfa1.getReach([ 'q0', 'q1' ], '1')
-      assert.deepStrictEqual(reachable5, result5)
+      assert.deepStrictEqual(expected5, result5)
+    })
+  })
+
+  describe('#getClosure', function () {
+    it('Should return the closure of some symbol', function () {
+      const start0 = 'S'
+      const accept0 = [ 'C' ]
+      const table0 = {
+        'S': { 'a': [ 'A', 'B' ] },
+        'A': { 'a': [ 'A', 'C' ] },
+        'B': { 'a': [ 'C' ], 'b': [ 'B' ] },
+        'C': {}
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+
+      const expected0 = new Set([ 'S', 'A', 'B', 'C' ])
+      const result0 = nfa0.getClosure([ 'S' ], 'a')
+      assert.deepStrictEqual(result0, expected0)
+    })
+
+    it('Should return the reachable states with only the epslon transition', function () {
+      const nstart0 = 'A'
+      const naccept0 = [ 'B' ]
+      const ntable0 = {
+        'A': { 'a': [ 'A' ], '&': [ 'B' ] },
+        'B': { 'b': [ 'B' ], '&': [ 'C' ] },
+        'C': { 'c': [ 'C' ] }
+      }
+
+      const nfa0 = new NFA(nstart0, naccept0, ntable0)
+
+      const expect0 = new Set([ 'A', 'B', 'C' ])
+      const result0 = nfa0.getClosure([ 'A' ], '&')
+      assert.deepStrictEqual(expect0, result0)
+
+      // Fig. 2.21
+      // John E. Hopcroft, Rajeev Motwani, Jeffrey D. Ullman
+      // Introduction to Automata Theory, Languages, and Computation, 3rd ed.
+      const nstart1 = '1'
+      const naccept1 = [ '7' ]
+      const ntable1 = {
+        '1': { '&': [ '2', '4' ] },
+        '2': { '&': [ '3' ] },
+        '3': { '&': [ '6' ] },
+        '4': { 'a': [ '5' ] },
+        '5': { 'b': [ '6' ], '&': [ '7' ] },
+        '6': {},
+        '7': {}
+      }
+
+      const nfa1 = new NFA(nstart1, naccept1, ntable1)
+
+      const expect1 = new Set([ '1', '2', '3', '4', '6' ])
+      const result1 = nfa1.getClosure([ '1' ], '&')
+      assert.deepStrictEqual(expect1, result1)
     })
   })
 
@@ -189,6 +244,72 @@ describe('NFA', function () {
       nfa1.determinize()
       assert.deepStrictEqual(nfa1, dfa1)
       assert(nfa1.isDeterministic())
+    })
+
+    it('Should determinize NFA with epslon transitions', function () {
+      const start0 = '1'
+      const accept0 = [ '2' ]
+      const table0 = {
+        '1': { 'b': [ '2' ], '&': [ '3' ] },
+        '2': { 'a': [ '2', '3' ], 'b': [ '3' ] },
+        '3': { 'a': [ '1' ] }
+      }
+
+      const nfa0 = new NFA(start0, accept0, table0)
+      nfa0.determinize()
+      console.log(nfa0.start)
+      console.log(nfa0.accept)
+      console.table(nfa0.table)
+    })
+  })
+
+  describe('#match', function () {
+    it('Should match words that belongs to the language', function () {
+      // Fig. 1.7
+      // Introduction to the theory of computation
+      // Michael Sipser
+      // Empty string or ends in a zero
+      const start0 = 'q1'
+      const accept0 = [ 'q1' ]
+      const table0 = {
+        'q1': { '1': [ 'q2' ], '0': [ 'q1' ] },
+        'q2': { '1': [ 'q2' ], '0': [ 'q1' ] }
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+
+      assert(nfa0.match('010'))
+      assert(nfa0.match('01010100001000'))
+      assert(nfa0.match('0'))
+      assert(nfa0.match(''))
+      assert(nfa0.match('1000010'))
+      assert(nfa0.match('10'))
+
+      assert(!nfa0.match('01'))
+      assert(!nfa0.match('010011'))
+      assert(!nfa0.match('11111'))
+      assert(!nfa0.match('010100011'))
+
+      const start1 = 'q0'
+      const accept1 = [ 'q1', 'q3' ]
+      const table1 = {
+        'q0': { '&': [ 'q1', 'q3' ] },
+        'q1': { '0': [ 'q2' ] },
+        'q2': { '0': [ 'q1' ] },
+        'q3': { '0': [ 'q4' ] },
+        'q4': { '0': [ 'q5' ] },
+        'q5': { '0': [ 'q3' ] }
+      }
+      const nfa1 = new NFA(start1, accept1, table1)
+
+      assert(nfa1.match('000000'))
+      assert(nfa1.match('0000'))
+      assert(nfa1.match('000'))
+      assert(nfa1.match('00'))
+      assert(nfa1.match(''))
+
+      assert(!nfa1.match('0'))
+      assert(!nfa1.match('00000'))
+      assert(!nfa1.match('0000000'))
     })
   })
 })
