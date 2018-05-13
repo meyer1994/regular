@@ -40,6 +40,8 @@ class NFA {
     for (let state in this.table) {
       for (let transition in this.table[state]) {
         const val = this.table[state][transition]
+        this.table[state][transition] = new Set(val)
+
         if (val.length === 0) {
           delete this.table[state][transition]
         }
@@ -48,10 +50,8 @@ class NFA {
 
     // Gets alphabet
     for (let state in table) {
-      const row = table[state]
-      for (let alpha in row) {
-        this.alphabet.add(alpha)
-      }
+      const row = Object.keys(table[state])
+      row.forEach(i => this.alphabet.add(i))
     }
   }
 
@@ -94,13 +94,11 @@ class NFA {
    * @return {Boolean} True if deterministic, false otherwise.
    */
   isDeterministic () {
-    // For every state
     for (let state in this.table) {
       const row = this.table[state]
-      // Check if there is more than one possible transition per character
       for (let alpha in row) {
         const destiny = row[alpha]
-        if (destiny.length > 1) {
+        if (destiny.size > 1) {
           return false
         }
       }
@@ -125,7 +123,7 @@ class NFA {
       const transitions = this.getTransitions(currentStates)
       for (let char of transitions) {
         const reachableSet = this.getReach(currentStates, char)
-        const reachableStates = [...reachableSet].sort()
+        const reachableStates = Array.from(reachableSet).sort()
         const reachableName = reachableStates.join()
 
         if (!(reachableName in newTable)) {
@@ -133,7 +131,7 @@ class NFA {
         }
 
         // Update new table
-        newTable[stateName][char] = [ reachableName ]
+        newTable[stateName][char] = new Set([ reachableName ])
       }
     }
 
@@ -183,6 +181,7 @@ class NFA {
    */
   getReach (states, symbol) {
     const set = new Set()
+    states = Array.from(states)
 
     // Removes states that do not have the passed symbol as a transition
     const filteredStates = states.filter(i => symbol in this.table[i])
@@ -190,6 +189,38 @@ class NFA {
     for (let state of filteredStates) {
       const nextStates = this.table[state][symbol]
       nextStates.forEach(i => set.add(i))
+    }
+
+    return set
+  }
+
+  /**
+   * Gets the closure of a symbolm from a list of states.
+   *
+   * @param  {Array}  states List of states to start from.
+   * @param  {String} symbol Symbol to get closure of.
+   *
+   * @return {Set}        Set containing the closure of reach of the symbol.
+   */
+  getClosure (states, symbol) {
+    const set = new Set()
+    const visitedStates = new Set()
+    const stack = [ Array.from(states) ]
+
+    while (stack.length > 0) {
+      const notVisitedStates = stack
+        .pop()
+        .filter(i => !visitedStates.has(i))
+
+      // Visits states
+      notVisitedStates.forEach(i => visitedStates.add(i))
+
+      // Adds reach to set
+      const nextStates = this.getReach(notVisitedStates, symbol)
+      nextStates.forEach(i => set.add(i))
+      if (nextStates.size > 0) {
+        stack.push(Array.from(nextStates))
+      }
     }
 
     return set
