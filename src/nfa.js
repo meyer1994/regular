@@ -329,6 +329,57 @@ class NFA {
     this.accept = newAccept
   }
 
+  /**
+   * @brief Calculates FA1 U FA2.
+   *
+   * @param {NFA} fa1 Finite automata 1.
+   * @param {NFA} fa2 Finite automate 2.
+   *
+   * @return {NFA} FA that represents FA1 union with FA2.
+   */
+  static union (fa1, fa2) {
+    // assert both automatas don't have states with same name
+    fa1.beautifyQn()
+    fa2.beautifyQn(Object.keys(fa1).length - 1)
+    // create new initial state
+    const initialState = 'qinitial'
+    // create acceptStates
+    const finalStates = []
+    if (fa1.accept.has(fa1.start) || fa2.accept.has(fa2.start)) {
+      finalStates.push(initialState)
+    }
+    for (const state of fa1.accept) {
+      finalStates.push(state)
+    }
+    for (const state of fa2.accept) {
+      finalStates.push(state)
+    }
+    // create new transitions table
+    const newTable = {}
+    const visitedTransitions = new Set()
+    Object.entries(fa1.table).forEach(([state, row]) => {
+      newTable[state] = row
+    })
+    Object.entries(fa2.table).forEach(([state, row]) => {
+      newTable[state] = row
+    })
+    // copies transitions from previous initial states to new initial state
+    newTable[initialState] = {}
+    Object.entries(fa1.table[fa1.start]).forEach(([transition, states]) => {
+      newTable[initialState][transition] = new Set(states)
+      if (fa2.table[fa2.start][transition]) {
+        newTable[initialState][transition].add(...fa2.table[fa2.start][transition])
+      }
+      visitedTransitions.add(transition)
+    })
+    Object.entries(fa2.table[fa2.start]).forEach(([transition, states]) => {
+      if (!visitedTransitions.has(transition)) {
+        newTable[initialState][transition] = new Set(states)
+      }
+    })
+    return new NFA(initialState, finalStates, newTable)
+  }
+
   static minimize (dfa) {
     throw new Error('TODO')
   }
