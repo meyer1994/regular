@@ -289,6 +289,46 @@ class NFA {
     return set
   }
 
+  /**
+   * transforms automaton states into q1, q2, ..., qn.
+   *
+   * @param {number} begin number which q to start.
+   */
+  beautifyQn (begin = 0) {
+    const newTable = {}
+    const dict = {}
+    dict[this.start] = 'q' + begin
+    begin++
+    // dict construction
+    Object.keys(this.table).forEach(state => {
+      if (state !== this.start) {
+        dict[state] = 'q' + begin
+        begin++
+      }
+    })
+    // new table construction
+    Object.entries(this.table).forEach(([state, row]) => {
+      const beautifulState = dict[state]
+      newTable[beautifulState] = {}
+      Object.entries(row).forEach(([nonTerminalSymbol, reachableStates]) => {
+        const beautifulReachableStates = new Set()
+        for (const state of reachableStates) {
+          beautifulReachableStates.add(dict[state])
+        }
+        newTable[beautifulState][nonTerminalSymbol] = beautifulReachableStates
+      })
+    })
+    // accept states construction
+    const newAccept = new Set()
+    for (const state of this.accept) {
+      newAccept.add(dict[state])
+    }
+    // altering object
+    this.start = dict[this.start]
+    this.table = newTable
+    this.accept = newAccept
+  }
+
   static minimize (dfa) {
     throw new Error('TODO')
   }

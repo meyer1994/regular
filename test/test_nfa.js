@@ -466,4 +466,27 @@ describe('NFA', function () {
       assert(!nfa1.match(''))
     })
   })
+  describe('#beautifyQn', () => {
+    it('should transform all original states into q0, q1, ..., qn', () => {
+      const start0 = 'S'
+      const accept0 = [ 'B' ]
+      const table0 = {
+        'S': { 'a': [ 'A' ] },
+        'A': { 'b': [ 'B' ] },
+        'B': {}
+      }
+
+      const expectedStart = 'q0'
+      const expectedAccept = [ 'q2' ]
+      const expectedTable = {
+        'q0': { 'a': [ 'q1' ] },
+        'q1': { 'b': [ 'q2' ] },
+        'q2': {}
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+      nfa0.beautifyQn()
+      const expected = new NFA(expectedStart, expectedAccept, expectedTable)
+      assert.deepStrictEqual(nfa0, expected)
+    })
+  })
 })
