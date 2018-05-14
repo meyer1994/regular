@@ -1,6 +1,6 @@
 
 class RE {
-  constructor () {
+  constructor (reString) {
     throw new Error('TODO')
   }
 
