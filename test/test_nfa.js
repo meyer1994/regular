@@ -489,4 +489,41 @@ describe('NFA', function () {
       assert.deepStrictEqual(nfa0, expected)
     })
   })
+  describe('#union', () => {
+    it('should unite two FAs', () => {
+      const start0 = 'S'
+      const accept0 = [ 'B' ]
+      const table0 = {
+        'S': { 'a': [ 'A' ] },
+        'A': { 'b': [ 'B' ] },
+        'B': {}
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+
+      const start1 = 'S'
+      const accept1 = [ 'B' ]
+      const table1 = {
+        'S': { 'a': [ 'A' ] },
+        'A': { 'c': [ 'B' ] },
+        'B': {}
+      }
+      const nfa1 = new NFA(start1, accept1, table1)
+
+      const expectedStart = 'qinitial'
+      const expectedFinalStates = [ 'q2', 'q5' ]
+      const expectedTable = {
+        'q0': { 'a': [ 'q1' ] },
+        'q1': { 'b': [ 'q2' ] },
+        'q2': {},
+        'q3': { 'a': [ 'q4' ] },
+        'q4': { 'c': [ 'q5' ] },
+        'q5': {},
+        'qinitial': { 'a': [ 'q1', 'q4' ] }
+      }
+
+      const nfa0UnionNfa1 = NFA.union(nfa0, nfa1)
+      assert
+        .deepStrictEqual(nfa0UnionNfa1, new NFA(expectedStart, expectedFinalStates, expectedTable))
+    })
+  })
 })
