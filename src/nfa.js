@@ -211,7 +211,7 @@ class NFA {
   getReach (states, symbol) {
     const set = new Set()
 
-    for (let state of states) {
+    for (const state of states) {
       if (symbol in this.table[state]) {
         this.table[state][symbol].forEach(i => set.add(i))
       }
@@ -223,57 +223,39 @@ class NFA {
   /**
    * Removes epslon transitions from automaton.
    *
-   * It uses the algorithm described by Thompson, see
-   * https://en.wikipedia.org/wiki/Thompson%27s_construction for more info.
+   * It works in 4 steps:
+   * 1 - Get epslon closure of each state;
+   * 2 - For every symbol in the alphabet, get the next possible states for the
+   * closure;
+   * 3 - For the set of states obtained in step 2, get the epslon closure again;
+   * 4 -
    */
   removeEpslon () {
-    const stack = [ this.getEpslonClosure([ this.start ]) ]
-    const visited = new Set()
     const newTable = {}
+    const newAccept = new Set()
 
-    while (stack.length > 0) {
-      const current = stack.pop()
-      const currentName = Array.from(current).sort().join()
+    for (const state in this.table) {
+      newTable[state] = {}
 
-      newTable[currentName] = {}
+      const closure = this.getEpslonClosure([ state ])
+      for (const accept of this.accept) {
+        if (closure.has(accept)) {
+          newAccept.add(state)
+        }
+      }
+      const transitions = this.getTransitions(closure)
 
-      const transitions = this.getTransitions(current)
-
-      for (let symbol of transitions) {
-        const reach = this.getReach(current, symbol)
+      for (const symbol of transitions) {
+        const reach = this.getReach(closure, symbol)
         const reachClosure = this.getEpslonClosure(reach)
-        const reachName = Array.from(reachClosure).sort().join()
 
-        newTable[currentName][symbol] = new Set([ reachName ])
-
-        if (!visited.has(reachName)) {
-          visited.add(reachName)
-          stack.push(reachClosure)
-        }
+        newTable[state][symbol] = reachClosure
       }
     }
-
-    // Gets final states
-    const acceptStates = new Set()
-    for (let state in newTable) {
-      for (let accept of this.accept) {
-        const containsFinal = state.indexOf(accept) !== -1
-        if (containsFinal) {
-          acceptStates.add(state)
-          break
-        }
-      }
-    }
-
-    // Gets starting state
-    const newStart = Object
-      .keys(newTable)
-      .filter(i => i.split(',').indexOf(this.start) !== -1)
 
     // Update object
-    this.start = newStart[0]
-    this.accept = acceptStates
     this.table = newTable
+    this.accept = newAccept
   }
 
   /**
