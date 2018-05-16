@@ -25,6 +25,33 @@ class RE {
   }
 }
 
+function inOrder (rootNode, list = []) {
+  const stack = []
+  const nodes = []
+
+  let current = rootNode
+
+  do {
+    // Go maximum left
+    if (current !== null) {
+      stack.push(current)
+      current = current.left
+      continue
+    }
+    // Insert yourself
+    const parent = stack.pop()
+    nodes.push(parent)
+    if (parent.right === null) {
+      continue
+    }
+
+    // Go right
+    current = parent.right
+  } while (stack.length > 0 || current !== null)
+
+  return nodes
+}
+
 class Parser {
   constructor (input) {
     if (input.match(VALID_INPUT) === null) {
@@ -173,3 +200,4 @@ class Parser {
 
 module.exports = RE
 module.exports.Parser = Parser
+module.exports.inOrder = inOrder
