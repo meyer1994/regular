@@ -37,4 +37,17 @@ describe('Grammar', function () {
       assert.deepStrictEqual(Grammar.fromNFA(dfa), new Grammar("S'", productions))
     })
   })
+  describe('#save/open file', function () {
+    it('Should save/open a grammar into .json', function () {
+      const productions = {
+        "S'": [ 'aA', '&' ],
+        'S': [ 'aA' ],
+        'A': [ 'aS', 'a' ]
+      }
+      const grammar = new Grammar("S'", productions)
+      grammar.save('./teste-save-open.json')
+      const grammar2 = Grammar.open('./teste-save-open.json')
+      assert.deepStrictEqual(grammar, grammar2)
+    })
+  })
 })
