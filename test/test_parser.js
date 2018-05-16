@@ -4,28 +4,27 @@ const Parser = RE.Parser
 
 describe('Parser', function () {
   describe('#constructor', function () {
-    it('Should throw when receiveing invalid regex', function () {
-      const input0 = '_(a)*'
-      const input1 = '(-a)*'
-      const input2 = '=(ab|c)*'
-
-      assert.throws(() => new Parser(input0))
-      assert.throws(() => new Parser(input1))
-      assert.throws(() => new Parser(input2))
+    const testThrow = [
+      '_(a)*',
+      '(-a)*',
+      '=(ab|c)*'
+    ]
+    testThrow.forEach(function (t) {
+      it(`Throws when receiving invalid regex: ${t}`, function () {
+        assert.throws(() => new Parser(t))
+      })
     })
 
-    it('Should remove dots and spaces from input', function () {
-      const input0 = '    (a.b*)'
-      const parser0 = new Parser(input0)
-      assert.equal(parser0.input, '(ab*)')
-
-      const input1 = `a* \n\n  .  b`
-      const parser1 = new Parser(input1)
-      assert.equal(parser1.input, 'a*b')
-
-      const input2 = 'a?  .a * *'
-      const parser2 = new Parser(input2)
-      assert.equal(parser2.input, 'a?a**')
+    const testsRemoval = [
+      { input: '    (a.b*)', expected: '(ab*)' },
+      { input: `a*   .  b`, expected: 'a*b' },
+      { input: 'a?  .a * *', expected: 'a?a**' }
+    ]
+    testsRemoval.forEach(function (t) {
+      it(`Removes dots and spaces: '${t.expected}' <= '${t.input}'`, function () {
+        const parser = new Parser(t.input)
+        assert.deepStrictEqual(parser.input, t.expected)
+      })
     })
   })
 
