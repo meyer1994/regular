@@ -5,6 +5,7 @@ const WHITE_SPACE = /\s/gi
 
 class RE {
   constructor (reString) {
+    this.parser = new Parser(reString)
     this.input = reString
   }
 
@@ -25,31 +26,146 @@ class RE {
   }
 }
 
-function inOrder (rootNode, list = []) {
-  const stack = []
-  const nodes = []
+class Simone {
+  constructor (parseTree) {
+    this.tree = parseTree
+    this.order = null
 
-  let current = rootNode
+    this.visited = new Set()
 
-  do {
-    // Go maximum left
-    if (current !== null) {
-      stack.push(current)
-      current = current.left
-      continue
+    this.thread()
+    this.enumerate()
+  }
+
+  thread () {
+    // Thread it
+    this.order = Simone.inOrder(this.tree)
+    const len = this.order.length
+    for (let i = 0; i < len - 1; i++) {
+      const node = this.order[i]
+      if (node.right === null) {
+        const next = this.order[i + 1]
+        node.right = next
+      }
     }
-    // Insert yourself
-    const parent = stack.pop()
-    nodes.push(parent)
-    if (parent.right === null) {
-      continue
+  }
+
+  enumerate () {
+    const leafs = this.order.filter(i => Simone.isLeaf(i))
+    for (let i = 0; i < leafs.length; i++) {
+      const leaf = leafs[i]
+      leaf.value = `${i + 1}_` + leaf.value
+    }
+  }
+
+  down (node) {
+    const right = node.right
+    const left = node.left
+    const value = node.value
+
+    switch (value) {
+      case '|':
+        this.down(left)
+        this.down(right)
+        break
+      case '*':
+      case '?':
+        this.down(left)
+        this.up(right)
+        break
+      case '.':
+        this.down(left)
+        break
+      default:
+        this.visited.add(value)
+        break
     }
 
-    // Go right
-    current = parent.right
-  } while (stack.length > 0 || current !== null)
+    return this.visited
+  }
 
-  return nodes
+  up (node) {
+    if (node === null) {
+      return this.visited
+    }
+
+    if (node.right === null) {
+      this.visited.add('lambda')
+      return this.visited
+    }
+
+    const right = node.right
+    const left = node.left
+    const value = node.value
+
+    switch (value) {
+      case '|':
+        const rightMost = this.rightMost(node)
+        this.up(rightMost)
+        break
+      case '*':
+        this.down(left)
+        this.up(right)
+        break
+      case '?':
+        this.up(right)
+        break
+      case '.':
+        this.down(right)
+        break
+      default:
+        this.up(right)
+        break
+    }
+
+    return this.visited
+  }
+
+  rightMost (node) {
+    // Try getting leaf
+    try {
+      let leaf = node
+      while (!Simone.isLeaf(leaf)) {
+        node = node.right
+      }
+      return leaf
+    } catch (e) {}
+
+    // Return lambda
+    return this.order[this.order.length - 1]
+  }
+
+  static isLeaf (node) {
+    return node.value.match(ALPHABET)
+  }
+
+  static inOrder (node) {
+    const stack = []
+    const nodes = []
+
+    let current = node
+
+    do {
+      // Go left
+      if (current !== null) {
+        stack.push(current)
+        current = current.left
+        continue
+      }
+
+      // Insert yourself
+      const parent = stack.pop()
+      nodes.push(parent)
+      if (parent.right === null) {
+        continue
+      }
+
+      // Go right
+      current = parent.right
+    } while (stack.length > 0 || current !== null)
+
+    return nodes
+  }
 }
 
 class Parser {
@@ -200,4 +316,4 @@ class Parser {
 
 module.exports = RE
 module.exports.Parser = Parser
-module.exports.inOrder = inOrder
+module.exports.Simone = Simone
