@@ -72,21 +72,20 @@ class NFA {
    */
   match (wordInput) {
     const word = wordInput.split('').reverse()
-    let states = this.getEpslonClosure([ this.start ])
 
+    let state = this.start
     while (word.length > 0) {
       const char = word.pop()
-      const epslonClosure = this.getEpslonClosure(states)
-      states = this.getReach(epslonClosure, char)
-    }
 
-    for (let accept of this.accept) {
-      if (states.has(accept)) {
-        return true
+      if (!(char in this.table[state])) {
+        return false
       }
+
+      // Holy!!! This is ugly
+      state = this.table[state][char].values().next().value
     }
 
-    return false
+    return this.accept.has(state)
   }
 
   /**

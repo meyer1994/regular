@@ -319,19 +319,19 @@ describe('NFA', function () {
       const nstart0 = 'S'
       const naccept0 = [ 'C' ]
       const ntable0 = {
-        'S': { 'a': [ 'A', 'B' ] },
-        'A': { 'a': [ 'A', 'C' ] },
-        'B': { 'a': [ 'C' ], 'b': [ 'B' ] },
-        'C': {}
+        S: { a: [ 'A', 'B' ] },
+        A: { a: [ 'A', 'C' ] },
+        B: { a: [ 'C' ], b: [ 'B' ] },
+        C: {}
       }
 
       const dstart0 = 'S'
       const daccept0 = [ 'A,C', 'C' ]
       const dtable0 = {
-        'S': { 'a': [ 'A,B' ] },
-        'A,B': { 'a': [ 'A,C' ], 'b': [ 'B' ] },
-        'A,C': { 'a': [ 'A,C' ] },
-        'B': { 'a': [ 'C' ], 'b': [ 'B' ] },
+        'S': { a: [ 'A,B' ] },
+        'A,B': { a: [ 'A,C' ], b: [ 'B' ] },
+        'A,C': { a: [ 'A,C' ] },
+        'B': { a: [ 'C' ], b: [ 'B' ] },
         'C': {}
       }
 
@@ -344,21 +344,21 @@ describe('NFA', function () {
       const nstart1 = 'S'
       const naccept1 = [ 'E' ]
       const ntable1 = {
-        'S': { 'a': [ 'B', 'E', 'D' ], 'b': [ 'E', 'A', 'C' ] },
-        'A': { 'a': [ 'E', 'B' ], 'b': [ 'A' ] },
-        'B': { 'a': [ 'A' ], 'b': [ 'B', 'E' ] },
-        'C': { 'a': [ 'D' ], 'b': [ 'C', 'E' ] },
-        'D': { 'a': [ 'C', 'E' ], 'b': [ 'D' ] },
-        'E': {}
+        S: { a: [ 'B', 'E', 'D' ], b: [ 'E', 'A', 'C' ] },
+        A: { a: [ 'E', 'B' ], b: [ 'A' ] },
+        B: { a: [ 'A' ], b: [ 'B', 'E' ] },
+        C: { a: [ 'D' ], b: [ 'C', 'E' ] },
+        D: { a: [ 'C', 'E' ], b: [ 'D' ] },
+        E: {}
       }
       const nfa1 = new NFA(nstart1, naccept1, ntable1)
 
       const dstart1 = 'S'
       const daccept1 = [ 'B,D,E', 'A,C,E' ]
       const dtable1 = {
-        'S': { 'a': [ 'B,D,E' ], 'b': [ 'A,C,E' ] },
-        'B,D,E': { 'a': [ 'A,C,E' ], 'b': [ 'B,D,E' ] },
-        'A,C,E': { 'a': [ 'B,D,E' ], 'b': [ 'A,C,E' ] }
+        'S': { a: [ 'B,D,E' ], b: [ 'A,C,E' ] },
+        'B,D,E': { a: [ 'A,C,E' ], b: [ 'B,D,E' ] },
+        'A,C,E': { a: [ 'B,D,E' ], b: [ 'A,C,E' ] }
       }
       const dfa1 = new NFA(dstart1, daccept1, dtable1)
 
@@ -426,8 +426,8 @@ describe('NFA', function () {
       const start0 = 'q1'
       const accept0 = [ 'q1' ]
       const table0 = {
-        'q1': { '1': [ 'q2' ], '0': [ 'q1' ] },
-        'q2': { '1': [ 'q2' ], '0': [ 'q1' ] }
+        q1: { '1': [ 'q2' ], '0': [ 'q1' ] },
+        q2: { '1': [ 'q2' ], '0': [ 'q1' ] }
       }
       const nfa0 = new NFA(start0, accept0, table0)
 
@@ -443,27 +443,27 @@ describe('NFA', function () {
       assert(!nfa0.match('11111'))
       assert(!nfa0.match('010100011'))
 
+      // #0 >= 2 and ends with 0
       const start1 = 'q0'
-      const accept1 = [ 'q1', 'q3' ]
+      const accept1 = [ 'q2' ]
       const table1 = {
-        'q0': { '&': [ 'q1', 'q3' ] },
-        'q1': { '0': [ 'q2' ] },
-        'q2': { '0': [ 'q1' ] },
-        'q3': { '0': [ 'q4' ] },
-        'q4': { '0': [ 'q5' ] },
-        'q5': { '0': [ 'q3' ] }
+        q0: { '1': [ 'q0' ], '0': [ 'q1' ] },
+        q1: { '1': [ 'q1' ], '0': [ 'q2' ] },
+        q2: { '0': [ 'q2' ] }
       }
+
       const nfa1 = new NFA(start1, accept1, table1)
 
-      assert(nfa1.match('000000'))
+      assert(nfa1.match('01000'))
       assert(nfa1.match('0000'))
-      assert(nfa1.match('000'))
+      assert(nfa1.match('0100'))
       assert(nfa1.match('00'))
-      assert(nfa1.match(''))
 
       assert(!nfa1.match('0'))
-      assert(!nfa1.match('00000'))
-      assert(!nfa1.match('0000000'))
+      assert(!nfa1.match('10'))
+      assert(!nfa1.match('000001'))
+      assert(!nfa1.match('1111'))
+      assert(!nfa1.match(''))
     })
   })
 })
