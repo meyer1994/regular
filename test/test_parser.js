@@ -1,5 +1,5 @@
 const assert = require('assert')
-const Parser = require('../src/parser')
+const Parser = require('../src/re').Parser
 
 describe('Parser', function () {
   describe('#constructor', function () {
