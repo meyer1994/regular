@@ -86,10 +86,6 @@ class Simone {
 
   up (node) {
     if (node === null) {
-      return this.visited
-    }
-
-    if (node.right === null) {
       this.visited.add('lambda')
       return this.visited
     }
@@ -101,7 +97,7 @@ class Simone {
     switch (value) {
       case '|':
         const rightMost = this.rightMost(node)
-        this.up(rightMost)
+        this.up(rightMost.right)
         break
       case '*':
         this.down(left)
@@ -122,17 +118,14 @@ class Simone {
   }
 
   rightMost (node) {
-    // Try getting leaf
-    try {
-      let leaf = node
-      while (!Simone.isLeaf(leaf)) {
-        node = node.right
+    let right = node
+    while (!Simone.isLeaf(right)) {
+      if (right.right === null) {
+        return right
       }
-      return leaf
-    } catch (e) {}
-
-    // Return lambda
-    return this.order[this.order.length - 1]
+      right = right.right
+    }
+    return right
   }
 
   static isLeaf (node) {
