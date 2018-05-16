@@ -1,5 +1,6 @@
 const assert = require('assert')
 const Parser = require('../src/re').Parser
+const inOrder = require('../src/re').inOrder
 
 describe('Parser', function () {
   describe('#constructor', function () {
@@ -111,6 +112,24 @@ describe('Parser', function () {
       }
 
       assert.deepStrictEqual(parser.regex(), expected)
+    })
+  })
+
+  describe('inOrder', function () {
+    it('Should return the in-order tree traversal list', function () {
+      const regex0 = '(ab|ac)*a?|(ba?c)*'
+      const parser0 = new Parser(regex0)
+      const tree0 = parser0.regex()
+      const expected0 = 'a.b|a.c*.a?|b.a?.c*'.split('')
+      const result0 = inOrder(tree0).map(n => n.value)
+      assert.deepStrictEqual(result0, expected0)
+
+      const regex1 = '(ba|a(ba)*a)*(b|a(ba)*)'
+      const parser1 = new Parser(regex1)
+      const tree1 = parser1.regex()
+      const expected1 = 'b.a|a.b.a*.a*.b|a.b.a*'.split('')
+      const result1 = inOrder(tree1).map(n => n.value)
+      assert.deepStrictEqual(result1, expected1)
     })
   })
 })
