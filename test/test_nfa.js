@@ -167,6 +167,89 @@ describe('NFA', function () {
       const newAccept0 = new Set([ 'q5' ])
       assert.deepStrictEqual(nfa0.accept, newAccept0)
       assert.deepStrictEqual(nfa0.table, expected0)
+
+      const start1 = '1'
+      const accept1 = [ '15' ]
+      const table1 = {
+        '1': { '&': [ '2', '4' ] },
+        '2': { 'b': [ '3' ] },
+        '3': { '&': [ '6' ] },
+        '4': { '&': [ '5' ] },
+        '5': { '&': [ '6' ] },
+        '6': { '&': [ '7' ] },
+        '7': { '&': [ '8' ] },
+        '8': { '&': [ '9', '11', '15' ] },
+        '9': { 'a': [ '10' ] },
+        '10': { '&': [ '14' ] },
+        '11': { 'b': [ '12' ] },
+        '12': { 'c': [ '13' ] },
+        '13': { '&': [ '14' ] },
+        '14': { '&': [ '8', '15' ] },
+        '15': {}
+      }
+
+      const nfa1 = new NFA(start1, accept1, table1)
+      nfa1.removeEpslon()
+
+      // I took too long on this one...
+      const expected1 = {
+        '1': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '3', '6', '7', '8', '9', '11', '12', '15' ])
+        },
+        '2': {
+          b: new Set([ '3', '6', '7', '8', '9', '11', '15' ])
+        },
+        '3': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '4': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '5': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '6': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '7': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '8': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '9': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ])
+        },
+        '10': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '11': {
+          b: new Set([ '12' ])
+        },
+        '12': {
+          c: new Set([ '8', '9', '11', '13', '14', '15' ])
+        },
+        '13': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '14': {
+          a: new Set([ '8', '9', '11', '10', '14', '15' ]),
+          b: new Set([ '12' ])
+        },
+        '15': {}
+      }
+      const newAccept1 = new Set([ '1', '3', '4', '5', '6', '7', '8', '10', '13', '14', '15' ])
+      assert.deepStrictEqual(nfa1.accept, newAccept1)
+      assert.deepStrictEqual(nfa1.table, expected1)
     })
 
     it('Removing epslon transitions twice should make no difference', function () {
@@ -309,25 +392,25 @@ describe('NFA', function () {
       nfa0.determinize()
 
       const expected0 = {
-        '1,11,15,2,4,5,6,7,8,9': {
-          'a': new Set([ '10,11,14,15,8,9' ]),
-          'b': new Set([ '11,12,15,3,6,7,8,9' ])
+        '1': {
+          a: new Set([ '10,11,14,15,8,9' ]),
+          b: new Set([ '11,12,15,3,6,7,8,9' ])
         },
         '10,11,14,15,8,9': {
-          'a': new Set([ '10,11,14,15,8,9' ]),
-          'b': new Set([ '12' ])
+          a: new Set([ '10,11,14,15,8,9' ]),
+          b: new Set([ '12' ])
         },
         '11,12,15,3,6,7,8,9': {
-          'a': new Set([ '10,11,14,15,8,9' ]),
-          'b': new Set([ '12' ]),
-          'c': new Set([ '11,13,14,15,8,9' ])
+          a: new Set([ '10,11,14,15,8,9' ]),
+          b: new Set([ '12' ]),
+          c: new Set([ '11,13,14,15,8,9' ])
         },
         '12': {
-          'c': new Set([ '11,13,14,15,8,9' ])
+          c: new Set([ '11,13,14,15,8,9' ])
         },
         '11,13,14,15,8,9': {
-          'a': new Set([ '10,11,14,15,8,9' ]),
-          'b': new Set([ '12' ])
+          a: new Set([ '10,11,14,15,8,9' ]),
+          b: new Set([ '12' ])
         }
       }
       assert.deepStrictEqual(nfa0.table, expected0)
