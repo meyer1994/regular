@@ -44,7 +44,7 @@ describe('Simone', function () {
       { input: 18, expected: new Set([ '6_b', 'lambda' ]) }
     ]
     testDown.forEach(function (t) {
-      const node = simone.order[t.input]
+      const node = simone.nodes[t.input]
       it(`Should go down the tree, order index: ${t.input}, ${node.value}`, function () {
         const result = simone.down(node)
         assert.deepStrictEqual(result, t.expected)
@@ -75,10 +75,10 @@ describe('Simone', function () {
     testUp.forEach(function (t) {
       it(`Should go up the tree: ${t.input}`, function () {
         const nodeIndex = simone
-          .order
+          .nodes
           .map(i => i.value)
           .indexOf(t.input)
-        const node = simone.order[nodeIndex]
+        const node = simone.nodes[nodeIndex]
         const result = simone.up(node)
         assert.deepStrictEqual(result, t.expected)
       })
