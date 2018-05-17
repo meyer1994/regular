@@ -5,12 +5,27 @@ const WHITE_SPACE = /\s/gi
 
 class RE {
   constructor (reString) {
-    this.parser = new Parser(reString)
+    this.simone = null
     this.input = reString
+    this.parser = new Parser(reString)
+
+    // Get alphabet
+    const alpha = reString
+      .split('')
+      .filter(i => i.match(ALPHABET))
+    this.alphabet = new Set(alpha)
   }
 
   toDFA () {
-    throw new Error('TODO')
+    throw new new Error()
+  }
+
+  getCompositions (leafs) {
+    throw new new Error()
+  }
+
+  getTransitions (composition) {
+    throw new new Error()
   }
 
   static intersection (era, erb) {
@@ -29,7 +44,9 @@ class RE {
 class Simone {
   constructor (parseTree) {
     this.tree = parseTree
-    this.order = null
+
+    this.nodes = null
+    this.leafs = {}
 
     this.visited = new Set()
 
@@ -39,22 +56,23 @@ class Simone {
 
   thread () {
     // Thread it
-    this.order = Simone.inOrder(this.tree)
-    const len = this.order.length
+    this.nodes = Simone.inOrder(this.tree)
+    const len = this.nodes.length
     for (let i = 0; i < len - 1; i++) {
-      const node = this.order[i]
+      const node = this.nodes[i]
       if (node.right === null) {
-        const next = this.order[i + 1]
+        const next = this.nodes[i + 1]
         node.right = next
       }
     }
   }
 
   enumerate () {
-    const leafs = this.order.filter(i => Simone.isLeaf(i))
+    const leafs = this.nodes.filter(i => Simone.isLeaf(i))
     for (let i = 0; i < leafs.length; i++) {
       const leaf = leafs[i]
-      leaf.value = `${i + 1}_` + leaf.value
+      leaf.value = `${i + 1}_${leaf.value}`
+      this.leafs[leaf.value] = leaf
     }
   }
 
