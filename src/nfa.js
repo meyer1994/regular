@@ -288,6 +288,28 @@ class NFA {
 
     return set
   }
+  /**
+   * auto completes the missing transitions of automata
+   * transitions table.
+   */
+  complete () {
+    const newState = 'qdead'
+    let isComplete = true
+    Object.values(this.table).forEach(row => {
+      for (const char of this.alphabet) {
+        if (row[char] === undefined || row[char] === []) {
+          row[char] = new Set([ newState ])
+          isComplete = false
+        }
+      }
+    })
+    if (!isComplete) {
+      this.table[newState] = {}
+      for (const char of this.alphabet) {
+        this.table[newState][char] = new Set([ newState ])
+      }
+    }
+  }
 
   /**
    * transforms automaton states into q1, q2, ..., qn.
