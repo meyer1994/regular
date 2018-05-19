@@ -1,4 +1,5 @@
 
+const NFA = require('../src/nfa')
 const VALID_INPUT = /^[\s/|/?/*/.A-Z0-9/(/)]*$/ig
 const ALPHABET = /[A-Z0-9]/i
 const WHITE_SPACE = /\s/gi
@@ -17,15 +18,107 @@ class RE {
   }
 
   toDFA () {
-    throw new new Error()
+    const tree = this.parser.regex()
+    this.simone = new Simone(tree)
+
+    // Get all leafs compositions
+    const leafsMap = this.getCompositions()
+
+    const compMap = new Map()
+    const start = 'q0'
+    const table = {}
+    const accept = new Set()
+
+    let stateCounter = 0
+
+    const stack = [ this.simone.down(tree) ]
+    while (stack.length > 0) {
+      const comp = stack.pop()
+      const compName = Array
+        .from(comp)
+        .map(i => i.index + i.value)
+        .sort()
+        .join()
+
+      let state = ''
+      // Composition already found
+      if (compMap.has(compName)) {
+        state = compMap.get(compName)
+
+      // New composition
+      } else {
+        state = 'q' + stateCounter++
+        compMap.set(compName, state)
+        table[state] = {}
+      }
+
+      if (comp.has(this.simone.LAMBDA)) {
+        accept.add(state)
+      }
+
+      // For each symbol in this composition
+      const symbols = this.getSymbolsFromNodes(comp)
+      for (const symbol of symbols) {
+        const newComp = new Set()
+
+        // Union of the compositions found when going up the tree
+        const filteredNodes = this.filterNodesBySymbol(comp, symbol)
+        for (const node of filteredNodes) {
+          const compSymbol = leafsMap.get(node)
+          compSymbol.forEach(i => newComp.add(i))
+        }
+        const newCompName = Array
+          .from(newComp)
+          .map(i => i.index + i.value)
+          .sort()
+          .join()
+
+        // Composition already found, just add transition
+        if (compMap.has(newCompName)) {
+          const oldState = compMap.get(newCompName)
+          table[state][symbol] = new Set([ oldState ])
+          continue
+        }
+
+        // Add new state to table
+        const newState = 'q' + stateCounter++
+        table[newState] = {}
+
+        // Add transition from current state to it
+        table[state][symbol] = new Set([ newState ])
+
+        // Add to map and stack
+        compMap.set(newCompName, newState)
+        stack.unshift(newComp)
+      }
+    }
+
+    return new NFA(start, accept, table)
   }
 
-  getCompositions (leafs) {
-    throw new new Error()
+  getCompositions () {
+    const leafsMap = new Map()
+    const leafs = this.simone.nodes.filter(i => Simone.isLeaf(i))
+    for (const leaf of leafs) {
+      const leafComp = this.simone.up(leaf)
+      leafsMap.set(leaf, leafComp)
+    }
+    return leafsMap
   }
 
-  getTransitions (composition) {
-    throw new new Error()
+  filterNodesBySymbol (nodes, symbol) {
+    const filtered = Array
+      .from(nodes)
+      .filter(i => i.value === symbol)
+    return new Set(filtered)
+  }
+
+  getSymbolsFromNodes (nodes) {
+    const symbols = Array
+      .from(nodes)
+      .filter(i => i.value.match(ALPHABET))
+      .map(i => i.value)
+    return new Set(symbols)
   }
 
   static intersection (era, erb) {
@@ -45,10 +138,16 @@ class Simone {
   constructor (parseTree) {
     this.tree = parseTree
 
-    this.nodes = null
-    this.leafs = {}
+    this.nodes = []
+    this.leafs = []
 
     this.visited = new Set()
+
+    this.LAMBDA = {
+      value: '$',
+      left: null,
+      right: null
+    }
 
     this.thread()
     this.enumerate()
@@ -57,54 +156,71 @@ class Simone {
   thread () {
     // Thread it
     this.nodes = Simone.inOrder(this.tree)
-    const len = this.nodes.length
-    for (let i = 0; i < len - 1; i++) {
-      const node = this.nodes[i]
+    for (const [i, node] of this.nodes.entries()) {
       if (node.right === null) {
-        const next = this.nodes[i + 1]
-        node.right = next
+        node.right = this.nodes[i + 1] || null
       }
     }
+
+    // For debugging
+    this.nodes.forEach((node, i) => { node.index = i })
+
+    // Add lambda node
+    const last = this.nodes[this.nodes.length - 1]
+    last.right = this.LAMBDA
+    this.nodes.push(this.LAMBDA)
   }
 
   enumerate () {
-    const leafs = this.nodes.filter(i => Simone.isLeaf(i))
-    for (let i = 0; i < leafs.length; i++) {
-      const leaf = leafs[i]
-      leaf.value = `${i + 1}_${leaf.value}`
-      this.leafs[leaf.value] = leaf
+    this.leafs = this.nodes.filter(i => Simone.isLeaf(i))
+    for (const [i, leaf] of this.leafs.entries()) {
+      leaf.number = i
     }
   }
 
   down (node) {
+    const result = this._down(node)
+    const copy = Array.from(result)
+    this.visited.clear()
+    return new Set(copy)
+  }
+
+  up (node) {
+    const result = this._up(node)
+    const copy = Array.from(result)
+    this.visited.clear()
+    return new Set(copy)
+  }
+
+  _down (node) {
     const right = node.right
     const left = node.left
     const value = node.value
 
     switch (value) {
       case '|':
-        this.down(left)
-        this.down(right)
+        this._down(left)
+        this._down(right)
         break
       case '*':
       case '?':
-        this.down(left)
-        this.up(right)
+        this._down(left)
+        this._up(right)
         break
       case '.':
-        this.down(left)
+        this._down(left)
         break
       default:
-        this.visited.add(value)
+        this.visited.add(node)
         break
     }
 
     return this.visited
   }
 
-  up (node) {
-    if (node === null) {
-      this.visited.add('lambda')
+  _up (node) {
+    if (node === this.LAMBDA) {
+      this.visited.add(this.LAMBDA)
       return this.visited
     }
 
@@ -115,20 +231,20 @@ class Simone {
     switch (value) {
       case '|':
         const rightMost = this.rightMost(node)
-        this.up(rightMost.right)
+        this._up(rightMost.right)
         break
       case '*':
-        this.down(left)
-        this.up(right)
+        this._down(left)
+        this._up(right)
         break
       case '?':
-        this.up(right)
+        this._up(right)
         break
       case '.':
-        this.down(right)
+        this._down(right)
         break
       default:
-        this.up(right)
+        this._up(right)
         break
     }
 
@@ -138,7 +254,7 @@ class Simone {
   rightMost (node) {
     let right = node
     while (!Simone.isLeaf(right)) {
-      if (right.right === null) {
+      if (right.right.value === this.LAMBDA.value) {
         return right
       }
       right = right.right

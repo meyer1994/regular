@@ -26,28 +26,25 @@ describe('Simone', function () {
     const tree = parser.regex()
     const simone = new Simone(tree)
 
-    beforeEach('Clears visited', function () {
-      simone.visited.clear()
-    })
-
     const testDown = [
-      { input: 1, expected: new Set([ '1_a' ]) },
-      { input: 3, expected: new Set([ '1_a', '3_a' ]) },
-      { input: 5, expected: new Set([ '3_a' ]) },
-      { input: 7, expected: new Set([ '1_a', '3_a', '5_a', 'lambda' ]) },
-      { input: 8, expected: new Set([ '1_a', '3_a', '5_a', 'lambda' ]) },
-      { input: 10, expected: new Set([ '5_a', 'lambda' ]) },
-      { input: 11, expected: new Set([ '1_a', '3_a', '5_a', '6_b', 'lambda' ]) },
-      { input: 13, expected: new Set([ '6_b' ]) },
-      { input: 15, expected: new Set([ '7_a', '8_c' ]) },
-      { input: 16, expected: new Set([ '7_a', '8_c' ]) },
-      { input: 18, expected: new Set([ '6_b', 'lambda' ]) }
+      { input: 1, expected: [ 0 ] },
+      { input: 3, expected: [ 0, 4 ] },
+      { input: 5, expected: [ 4 ] },
+      { input: 7, expected: [ 0, 4, 9, 19 ] },
+      { input: 8, expected: [ 0, 4, 9, 19 ] },
+      { input: 10, expected: [ 9, 19 ] },
+      { input: 11, expected: [ 0, 4, 9, 12, 19 ] },
+      { input: 13, expected: [ 12 ] },
+      { input: 15, expected: [ 14, 17 ] },
+      { input: 16, expected: [ 14, 17 ] },
+      { input: 18, expected: [ 12, 19 ] }
     ]
     testDown.forEach(function (t) {
       const node = simone.nodes[t.input]
       it(`Should go down the tree, order index: ${t.input}, ${node.value}`, function () {
         const result = simone.down(node)
-        assert.deepStrictEqual(result, t.expected)
+        const expected = new Set(t.expected.map(i => simone.nodes[i]))
+        assert.deepStrictEqual(result, expected)
       })
     })
   })
@@ -63,24 +60,21 @@ describe('Simone', function () {
     })
 
     const testUp = [
-      { input: '1_a', expected: new Set([ '2_b' ]) },
-      { input: '2_b', expected: new Set([ '1_a', '3_a', '5_a', 'lambda' ]) },
-      { input: '3_a', expected: new Set([ '4_c' ]) },
-      { input: '4_c', expected: new Set([ '1_a', '3_a', '5_a', 'lambda' ]) },
-      { input: '5_a', expected: new Set([ 'lambda' ]) },
-      { input: '6_b', expected: new Set([ '7_a', '8_c' ]) },
-      { input: '7_a', expected: new Set([ '8_c' ]) },
-      { input: '8_c', expected: new Set([ '6_b', 'lambda' ]) }
+      { input: 0, expected: [ 2 ] },
+      { input: 2, expected: [ 0, 4, 9, 19 ] },
+      { input: 4, expected: [ 6 ] },
+      { input: 6, expected: [ 0, 4, 9, 19 ] },
+      { input: 9, expected: [ 19 ] },
+      { input: 12, expected: [ 14, 17 ] },
+      { input: 14, expected: [ 17 ] },
+      { input: 17, expected: [ 12, 19 ] }
     ]
     testUp.forEach(function (t) {
       it(`Should go up the tree: ${t.input}`, function () {
-        const nodeIndex = simone
-          .nodes
-          .map(i => i.value)
-          .indexOf(t.input)
-        const node = simone.nodes[nodeIndex]
+        const node = simone.nodes[t.input]
         const result = simone.up(node)
-        assert.deepStrictEqual(result, t.expected)
+        const expected = new Set(t.expected.map(i => simone.nodes[i]))
+        assert.deepStrictEqual(result, expected)
       })
     })
   })
