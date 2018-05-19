@@ -526,4 +526,31 @@ describe('NFA', function () {
         .deepStrictEqual(nfa0UnionNfa1, new NFA(expectedStart, expectedFinalStates, expectedTable))
     })
   })
+  describe('#complete', () => {
+    it('should complete the transitions of a incomplete automata', () => {
+      const start = 'q0'
+      const accept = [ 'qf' ]
+      const table = {
+        'q0': { 'a': [ 'q1' ], 'b': [ 'q1' ], 'c': [ 'q1' ] },
+        'q1': {},
+        'q2': {},
+        'q3': {},
+        'qf': {}
+      }
+
+      const expectedTable = {
+        'q0': { 'a': [ 'q1' ], 'b': [ 'q1' ], 'c': [ 'q1' ] },
+        'q1': { 'a': [ 'qdead' ], 'b': [ 'qdead' ], 'c': [ 'qdead' ] },
+        'q2': { 'a': [ 'qdead' ], 'b': [ 'qdead' ], 'c': [ 'qdead' ] },
+        'q3': { 'a': [ 'qdead' ], 'b': [ 'qdead' ], 'c': [ 'qdead' ] },
+        'qf': { 'a': [ 'qdead' ], 'b': [ 'qdead' ], 'c': [ 'qdead' ] },
+        'qdead': { 'a': [ 'qdead' ], 'b': [ 'qdead' ], 'c': [ 'qdead' ] }
+      }
+
+      const nfa1 = new NFA(start, accept, table)
+      nfa1.complete()
+      const expected = new NFA(start, accept, expectedTable)
+      assert.deepStrictEqual(nfa1, expected)
+    })
+  })
 })
