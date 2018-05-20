@@ -613,4 +613,51 @@ describe('NFA', function () {
       assert.deepStrictEqual(nfa0Star, expected)
     })
   })
+  describe('#reverse', () => {
+    it('should reverse a already complete and deterministic FA', () => {
+      const start0 = 'S'
+      const accept0 = [ 'S' ]
+      const table0 = {
+        'S': { 'a': [ 'A' ], 'b': [ 'S' ] },
+        'A': { 'a': [ 'B' ], 'b': [ 'A' ] },
+        'B': { 'a': [ 'S' ], 'b': [ 'B' ] }
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+
+      const expectedStart = 'S'
+      const expectedFinalStates = [ 'A', 'B' ]
+      const expectedTable = {
+        'S': { 'a': [ 'A' ], 'b': [ 'S' ] },
+        'A': { 'a': [ 'B' ], 'b': [ 'A' ] },
+        'B': { 'a': [ 'S' ], 'b': [ 'B' ] }
+      }
+
+      const reversedNFA0 = NFA.reverse(nfa0)
+      const expected = new NFA(expectedStart, expectedFinalStates, expectedTable)
+      assert.deepStrictEqual(reversedNFA0, expected)
+    })
+    it('should reverse a incomplete FA', () => {
+      const start = 'q0'
+      const accept = [ 'q0', 'q1' ]
+      const table = {
+        'q0': { 'a': [ 'q2' ], 'b': [ 'q1' ] },
+        'q1': { 'a': [ 'q2' ] },
+        'q2': { 'a': [ 'q0' ], 'b': [ 'q3' ] },
+        'q3': { 'a': [ 'q0' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expectedStart = 'q0'
+      const expectedAccept = [ 'q2', 'q3', 'qdead' ]
+      const expectedTable = {
+        'q0': { 'a': [ 'q2' ], 'b': [ 'q1' ] },
+        'q1': { 'a': [ 'q2' ], 'b': [ 'qdead' ] },
+        'q2': { 'a': [ 'q0' ], 'b': [ 'q3' ] },
+        'q3': { 'a': [ 'q0' ], 'b': [ 'qdead' ] },
+        'qdead': { 'a': [ 'qdead' ], 'b': [ 'qdead' ] }
+      }
+      const expected = new NFA(expectedStart, expectedAccept, expectedTable)
+      assert.deepStrictEqual(NFA.reverse(nfa), expected)
+    })
+  })
 })
