@@ -589,4 +589,28 @@ describe('NFA', function () {
         .deepStrictEqual(nfa0ConcatNfa1, new NFA(expectedStart, expectedFinalStates, expectedTable))
     })
   })
+  describe('#star', () => {
+    it('should star a FA', () => {
+      const start0 = 'S'
+      const accept0 = [ 'B' ]
+      const table0 = {
+        'S': { 'a': [ 'A' ] },
+        'A': { 'b': [ 'B' ] },
+        'B': {}
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+
+      const expectedStart = 'S'
+      const expectedFinalStates = [ 'B' ]
+      const expectedTable = {
+        'S': { 'a': [ 'A' ] },
+        'A': { 'b': [ 'B' ] },
+        'B': { 'a': [ 'A' ] }
+      }
+
+      const nfa0Star = NFA.star(nfa0)
+      const expected = new NFA(expectedStart, expectedFinalStates, expectedTable)
+      assert.deepStrictEqual(nfa0Star, expected)
+    })
+  })
 })
