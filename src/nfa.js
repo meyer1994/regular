@@ -437,6 +437,32 @@ class NFA {
     return new NFA(newStart, newAccept, newTable)
   }
 
+  /**
+   * @brief produces the automata representing the star of the
+   * original automata.
+   *
+   * @param {NFA} fa original finite automata.
+   *
+   * @return {NFA} FA that is the star of original FA.
+   */
+  static star (fa) {
+    const newStart = fa.start
+    const newTable = Object.assign({}, fa.table)
+    const newAccept = fa.accept
+    Object.entries(newTable[newStart]).forEach(([char, states]) => {
+      for (const acceptState of newAccept) {
+        if (newTable[acceptState][char] === undefined) {
+          newTable[acceptState][char] = states
+        } else {
+          for (const state of states) {
+            newTable[acceptState][char].add(state)
+          }
+        }
+      }
+    })
+    return new NFA(newStart, newAccept, newTable)
+  }
+
   static minimize (dfa) {
     throw new Error('TODO')
   }
