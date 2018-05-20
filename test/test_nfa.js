@@ -726,4 +726,32 @@ describe('NFA', function () {
       assert.deepStrictEqual(diff, expected)
     })
   })
+  describe('#minimize', () => {
+    it('should minimize a AF', () => {
+      const start = 'A'
+      const accept = [ 'A', 'D', 'G' ]
+      const table = {
+        'A': { 'a': [ 'G' ], 'b': [ 'B' ] },
+        'B': { 'a': [ 'F' ], 'b': [ 'E' ] },
+        'C': { 'a': [ 'C' ], 'b': [ 'G' ] },
+        'D': { 'a': [ 'A' ], 'b': [ 'H' ] },
+        'E': { 'a': [ 'E' ], 'b': [ 'A' ] },
+        'F': { 'a': [ 'B' ], 'b': [ 'C' ] },
+        'G': { 'a': [ 'G' ], 'b': [ 'F' ] },
+        'H': { 'a': [ 'H' ], 'b': [ 'D' ] }
+      }
+      const nfa0 = new NFA(start, accept, table)
+
+      const expectedStart = 'q0'
+      const expectedAccept = [ 'q0' ]
+      const expectedTable = {
+        'q0': { 'a': [ 'q0' ], 'b': [ 'q1' ] },
+        'q1': { 'a': [ 'q1' ], 'b': [ 'q2' ] },
+        'q2': { 'a': [ 'q2' ], 'b': [ 'q0' ] }
+      }
+      const expected = new NFA(expectedStart, expectedAccept, expectedTable)
+      const minimal = NFA.minimize(nfa0)
+      assert.deepStrictEqual(minimal, expected)
+    })
+  })
 })
