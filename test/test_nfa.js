@@ -660,4 +660,39 @@ describe('NFA', function () {
       assert.deepStrictEqual(NFA.reverse(nfa), expected)
     })
   })
+  describe('#intersection', () => {
+    it('should return the intersection of two FAs.', () => {
+      const start0 = 'S'
+      const accept0 = [ 'S', 'A' ]
+      const table0 = {
+        'S': { '0': [ 'A' ], '1': [ 'S' ] },
+        'A': { '1': [ 'S' ] }
+      }
+
+      const start1 = 'S'
+      const accept1 = [ 'S', 'A' ]
+      const table1 = {
+        'S': { '0': [ 'S' ], '1': [ 'A' ] },
+        'A': { '0': [ 'S' ] }
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+      const nfa1 = new NFA(start1, accept1, table1)
+
+      const expectedStart = 'qinitial'
+      const expectedAccept = [ 'qinitial', 'q1,q3', 'q0,q4' ]
+      const expectedTable = {
+        'qinitial': { '0': [ 'q1,q3' ], '1': [ 'q0,q4' ] },
+        'q1,q3': { '0': [ 'q2,q3' ], '1': [ 'q0,q4' ] },
+        'q0,q4': { '0': [ 'q1,q3' ], '1': [ 'q0,q5' ] },
+        'q2,q3': { '0': [ 'q2,q3' ], '1': [ 'q2,q4' ] },
+        'q0,q5': { '0': [ 'q1,q5' ], '1': [ 'q0,q5' ] },
+        'q2,q4': { '0': [ 'q2,q3' ], '1': [ 'q2,q5' ] },
+        'q1,q5': { '0': [ 'q2,q5' ], '1': [ 'q0,q5' ] },
+        'q2,q5': { '0': [ 'q2,q5' ], '1': [ 'q2,q5' ] }
+      }
+      const expected = new NFA(expectedStart, expectedAccept, expectedTable)
+      const intersection = NFA.intersection(nfa0, nfa1)
+      assert.deepStrictEqual(intersection, expected)
+    })
+  })
 })
