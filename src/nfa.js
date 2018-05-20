@@ -463,8 +463,180 @@ class NFA {
     return new NFA(newStart, newAccept, newTable)
   }
 
+  /**
+   * @brief removes states that can't be reached from automata.
+   */
+  removeUnreachable () {
+    const reachableStates = new Set(this.start)
+    let finished = false
+    while (!finished) {
+      const newReachableStates = new Set()
+      for (const state of reachableStates) {
+        for (const char of this.alphabet) {
+          if (char in this.table[state]) {
+            for (const reachableState of this.table[state][char]) {
+              if (!reachableStates.has(reachableState)) {
+                newReachableStates.add(reachableState)
+              }
+            }
+          }
+        }
+      }
+      if (newReachableStates.size === 0) {
+        finished = true
+      } else {
+        for (const state of newReachableStates) {
+          reachableStates.add(state)
+        }
+      }
+    }
+    Object.keys(this.table).forEach(state => {
+      if (!reachableStates.has(state)) {
+        delete this.table[state]
+      }
+    })
+  }
+
+  /**
+   * @brief removes states that can't reach a accept state.
+   */
+  removeDead () {
+    const notDead = new Set()
+    for (const acceptState of this.accept) {
+      notDead.add(acceptState)
+    }
+    let finished = false
+    while (!finished) {
+      const marked = new Set()
+      for (const state in this.table) {
+        if (!notDead.has(state)) {
+          for (const char in this.table[state]) {
+            for (const reachableState of this.table[state][char]) {
+              if (notDead.has(reachableState)) {
+                marked.add(state)
+              }
+            }
+          }
+        }
+      }
+      if (marked.size === 0) {
+        finished = true
+      } else {
+        for (const state of marked) {
+          notDead.add(state)
+        }
+      }
+    }
+    Object.keys(this.table).forEach(state => {
+      if (!notDead.has(state)) {
+        delete this.table[state]
+      }
+    })
+  }
+
+  /**
+   * @brief Merge equivalent states.
+   */
+  mergeEquivalents () {
+    const nonFinal = []
+    for (const state in this.table) {
+      if (!this.accept.has(state)) {
+        nonFinal.push(state)
+      }
+    }
+    const undistiguishable = new Set()
+    for (const pair of Combinations(Array.from(this.accept), 2)) {
+      undistiguishable.add(pair)
+    }
+    for (const pair of Combinations(nonFinal, 2)) {
+      undistiguishable.add(pair)
+    }
+    while (true) {
+      let newDistiguishableFound = false
+      const undistiguishableCopy = new Set(undistiguishable)
+      for (const pair of undistiguishableCopy) {
+        const [stateA, stateB] = pair
+        if (!this.areUndistinguishable(stateA, stateB, undistiguishableCopy)) {
+          undistiguishable.delete(pair)
+          newDistiguishableFound = true
+        }
+      }
+      if (!newDistiguishableFound) {
+        break
+      }
+    }
+    for (const [stateA, stateB] of undistiguishable) {
+      this.mergeStates(stateA, stateB)
+    }
+  }
+
+  /**
+   * @brief State a and b are distinguishable if they go to distinguishable
+   * states for some input symbol.
+   *
+   * @param {string} stateA
+   * @param {string} stateB
+   * @param {Set} undistiguishable
+   */
+  areUndistinguishable (stateA, stateB, undistiguishable) {
+    for (const symbol of this.alphabet) {
+      const transitionA = Array.from(this.table[stateA][symbol])[0]
+      const transitionB = Array.from(this.table[stateB][symbol])[0]
+      if (transitionA !== transitionB) {
+        let has = false
+        undistiguishable.forEach(set => {
+          if (equals(new Set([transitionA, transitionB]), set)) {
+            has = true
+          }
+        })
+        if (!has) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+  /**
+   * @brief merges stateB into stateA, making them one state.
+   *
+   * @param {string} stateA
+   * @param {string} stateB
+   */
+  mergeStates (stateA, stateB) {
+    let stateToBeRemoved = stateB
+    let stateToBeKept = stateA
+    if (stateToBeRemoved === this.start || !(stateToBeKept in this.table)) {
+      stateToBeRemoved = stateA
+      stateToBeKept = stateB
+    }
+    for (const state in this.table) {
+      for (const transition in this.table[state]) {
+        if (this.table[state][transition].has(stateToBeRemoved)) {
+          this.table[state][transition].delete(stateToBeRemoved)
+          this.table[state][transition].add(stateToBeKept)
+        }
+      }
+    }
+    delete this.table[stateToBeRemoved]
+    this.accept.delete(stateToBeRemoved)
+  }
+
+  /**
+   * minimizes the automata.
+   *
+   * @param {NFA} dfa
+   *
+   * @return {NFA} dfa minimized.
+   */
   static minimize (dfa) {
-    throw new Error('TODO')
+    const minimal = new NFA(dfa.start, dfa.accept, dfa.table)
+    minimal.determinize()
+    minimal.removeUnreachable()
+    minimal.removeDead()
+    minimal.mergeEquivalents()
+    minimal.beautifyQn()
+    return minimal
   }
 
   /**
@@ -514,4 +686,36 @@ class NFA {
   }
 }
 
+function Combinations (array, size) {
+  function p (t, i) {
+    if (t.length === size) {
+      result.add(new Set(t))
+      return
+    }
+    if (i + 1 > array.length) {
+      return
+    }
+    p(t.concat(array[i]), i + 1)
+    p(t, i + 1)
+  }
+
+  var result = new Set()
+  p([], 0)
+  return result
+}
+
+function difference (setA, setB) {
+  var difference = new Set(setA)
+  for (var elem of setB) {
+    difference.delete(elem)
+  }
+  return difference
+}
+
+function equals (setA, setB) {
+  if (difference(setA, setB).size === 0) {
+    return true
+  }
+  return false
+}
 module.exports = NFA
