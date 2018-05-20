@@ -475,8 +475,26 @@ class NFA {
     throw new Error('TODO')
   }
 
-  static reverse (dfa, dfb) {
-    throw new Error('TODO')
+  /**
+   * @brief revertes the automata. Everything that was accepted
+   * now is rejected and everything that was rejected now is accepted.
+   *
+   * @param {NFA} dfa DFA to be reversed.
+   *
+   * @return {NFA} reversed DFA.
+   */
+  static reverse (dfa) {
+    const reversedDFA = new NFA(dfa.start, dfa.accept, dfa.table)
+    reversedDFA.determinize()
+    reversedDFA.complete()
+    const newAccept = new Set()
+    Object.keys(reversedDFA.table).forEach(state => {
+      if (!reversedDFA.accept.has(state)) {
+        newAccept.add(state)
+      }
+    })
+    reversedDFA.accept = newAccept
+    return reversedDFA
   }
 }
 
