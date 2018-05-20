@@ -695,4 +695,35 @@ describe('NFA', function () {
       assert.deepStrictEqual(intersection, expected)
     })
   })
+  describe('#diff', () => {
+    it('should get the diff between two AFs', () => {
+      const start0 = 'S'
+      const accept0 = [ 'A' ]
+      const table0 = {
+        'S': { '0': [ 'A' ] },
+        'A': { '0': [ 'A' ], '1': [ 'A' ] }
+      }
+      const start1 = 'S'
+      const accept1 = [ 'A' ]
+      const table1 = {
+        'S': { '0': [ 'A' ], '1': [ 'S' ] },
+        'A': { '0': [ 'A' ], '1': [ 'S' ] }
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+      const nfa1 = new NFA(start1, accept1, table1)
+
+      const expectedStart = 'qinitial'
+      const expectedAccept = [ 'q1,q3' ]
+      const expectedTable = {
+        'qinitial': { '0': [ 'q1,q4' ], '1': [ 'q2,q3' ] },
+        'q1,q4': { '0': [ 'q1,q4' ], '1': [ 'q1,q3' ] },
+        'q2,q3': { '0': [ 'q2,q4' ], '1': [ 'q2,q3' ] },
+        'q1,q3': { '0': [ 'q1,q4' ], '1': [ 'q1,q3' ] },
+        'q2,q4': { '0': [ 'q2,q4' ], '1': [ 'q2,q3' ] }
+      }
+      const expected = new NFA(expectedStart, expectedAccept, expectedTable)
+      const diff = NFA.diff(nfa0, nfa1)
+      assert.deepStrictEqual(diff, expected)
+    })
+  })
 })
