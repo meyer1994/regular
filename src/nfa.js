@@ -467,8 +467,16 @@ class NFA {
     throw new Error('TODO')
   }
 
+  /**
+   * @brief calculates the intersection between two DFA's.
+   *
+   * @param {NFA} dfa
+   * @param {NFA} dfb
+   *
+   * @return {NFA} returns FA that represents the intersection of dfa with dfb.
+   */
   static intersection (dfa, dfb) {
-    throw new Error('TODO')
+    return NFA.reverse(NFA.union(NFA.reverse(dfa), NFA.reverse(dfb)))
   }
 
   static diff (dfa, dfb) {
