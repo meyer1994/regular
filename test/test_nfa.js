@@ -553,4 +553,40 @@ describe('NFA', function () {
       assert.deepStrictEqual(nfa1, expected)
     })
   })
+  describe('#concat', () => {
+    it('should concat two FAs', () => {
+      const start0 = 'S'
+      const accept0 = [ 'B' ]
+      const table0 = {
+        'S': { 'a': [ 'A' ] },
+        'A': { 'b': [ 'B' ] },
+        'B': {}
+      }
+      const nfa0 = new NFA(start0, accept0, table0)
+
+      const start1 = 'S'
+      const accept1 = [ 'B' ]
+      const table1 = {
+        'S': { 'a': [ 'A' ] },
+        'A': { 'c': [ 'B' ] },
+        'B': {}
+      }
+      const nfa1 = new NFA(start1, accept1, table1)
+
+      const expectedStart = 'q0'
+      const expectedFinalStates = [ 'q5' ]
+      const expectedTable = {
+        'q0': { 'a': [ 'q1' ] },
+        'q1': { 'b': [ 'q2' ] },
+        'q2': { 'a': [ 'q4' ] },
+        'q3': { 'a': [ 'q4' ] },
+        'q4': { 'c': [ 'q5' ] },
+        'q5': {}
+      }
+
+      const nfa0ConcatNfa1 = NFA.concat(nfa0, nfa1)
+      assert
+        .deepStrictEqual(nfa0ConcatNfa1, new NFA(expectedStart, expectedFinalStates, expectedTable))
+    })
+  })
 })

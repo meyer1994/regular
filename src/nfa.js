@@ -402,6 +402,41 @@ class NFA {
     return new NFA(initialState, finalStates, newTable)
   }
 
+  /**
+   * @brief concatenates FA1 with FA2.
+   *
+   * @param {NFA} fa1 Finite automata 1.
+   * @param {NFA} fa2 Finite automate 2.
+   *
+   * @return {NFA} FA that represents FA1 concatenated with FA2.
+   */
+  static concat (fa1, fa2) {
+    // assert both automatas don't have states with same name
+    fa1.beautifyQn()
+    fa2.beautifyQn(Object.keys(fa1).length - 1)
+    const newStart = fa1.start
+    let newTable = Object.assign({}, fa1.table)
+    const newAccept = fa2.accept
+    Object.entries(fa2.table[fa2.start]).forEach(([char, states]) => {
+      for (const finalState of fa1.accept) {
+        if (newTable[finalState][char] === undefined) {
+          newTable[finalState][char] = new Set(states)
+        } else {
+          for (const state of states) {
+            newTable[finalState][char].add(state)
+          }
+        }
+      }
+    })
+    newTable = Object.assign(newTable, fa2.table)
+    if (fa2.accept.has(fa2.start)) {
+      for (const acceptState of fa1.accept) {
+        newAccept.add(acceptState)
+      }
+    }
+    return new NFA(newStart, newAccept, newTable)
+  }
+
   static minimize (dfa) {
     throw new Error('TODO')
   }
