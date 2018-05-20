@@ -479,8 +479,16 @@ class NFA {
     return NFA.reverse(NFA.union(NFA.reverse(dfa), NFA.reverse(dfb)))
   }
 
+  /**
+   * @brief calculates DFA - DFB.
+   *
+   * @param {NFA} dfa
+   * @param {NFA} dfb
+   *
+   * @returns returns FA that represents DFA - DFB
+   */
   static diff (dfa, dfb) {
-    throw new Error('TODO')
+    return NFA.intersection(dfa, NFA.reverse(dfb))
   }
 
   /**
