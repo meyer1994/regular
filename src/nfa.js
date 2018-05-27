@@ -444,30 +444,27 @@ class NFA {
    */
   static concat (fa1, fa2) {
     // assert both automatas don't have states with same name
-    fa1.beautifyQn()
-    fa2.beautifyQn(Object.keys(fa1).length - 1)
+    fa1.beautify()
+    fa2.beautify(Object.keys(fa1).length)
+
     const newStart = fa1.start
     let newTable = Object.assign({}, fa1.table)
     const newAccept = fa2.accept
-    Object.entries(fa2.table[fa2.start]).forEach(([char, states]) => {
+
+    const entries = Object.entries(fa2.table[fa2.start])
+    for (const [char, states] of entries) {
       for (const finalState of fa1.accept) {
-        if (newTable[finalState][char] === undefined) {
-          newTable[finalState][char] = new Set(states)
-        } else {
-          for (const state of states) {
-            newTable[finalState][char].add(state)
-          }
-        }
-      }
-    })
-    newTable = Object.assign(newTable, fa2.table)
-    if (fa2.accept.has(fa2.start)) {
-      for (const acceptState of fa1.accept) {
-        newAccept.add(acceptState)
+        newTable[finalState][char].push(...states)
       }
     }
+
+    newTable = Object.assign(newTable, fa2.table)
+    if (fa2.accept.includes(fa2.start)) {
+      newAccept.push(...fa1.accept)
+    }
+
     return new NFA(newStart, newAccept, newTable)
-}
+  }
 
   /**
    * @brief produces the automata representing the star of the
