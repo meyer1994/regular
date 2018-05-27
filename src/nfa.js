@@ -32,35 +32,41 @@ class NFA {
    */
   constructor (start, accept, table) {
     this.start = start
-    this.accept = new Set(accept)
+    this.accept = accept
     this.table = table
-    this.alphabet = new Set()
 
-    // Remove useless transitions from table
-    for (let state in this.table) {
-      for (let transition in this.table[state]) {
-        const val = this.table[state][transition]
-        this.table[state][transition] = new Set(val)
+    this.fillTransitions()
+  }
 
-        if (val.length === 0) {
-          delete this.table[state][transition]
+  get alphabet () {
+    const set = new Set()
+    const rows = Object.values(this.table)
+
+    for (const row of rows) {
+      Object
+        .keys(row)
+        .forEach(i => set.add(i))
+    }
+
+    return Array.from(set)
+  }
+
+  /**
+   * Fill out omitted transitions.
+   *
+   * It creates an empty array and stores it into the states transitions.
+   */
+  fillTransitions () {
+    const alphabet = this.alphabet
+    const rows = Object.values(this.table)
+
+    for (const row of rows) {
+      for (const symbol of alphabet) {
+        if (!(symbol in row)) {
+          row[symbol] = []
         }
       }
     }
-
-    // Gets alphabet
-    for (let state in table) {
-      const row = Object.keys(table[state])
-      row.forEach(i => this.alphabet.add(i))
-    }
-  }
-
-  toRegExp () {
-    throw new Error('TODO')
-  }
-
-  toGrammar () {
-    throw new Error('TODO')
   }
 
   /**
@@ -68,7 +74,7 @@ class NFA {
    *
    * @param  {String} wordInput String to check.
    *
-   * @return {[type]}           True if it belongs, false otherwise.
+   * @return {Boolean}           True if it belongs, false otherwise.
    */
   match (wordInput) {
     const word = wordInput.split('').reverse()
@@ -77,15 +83,16 @@ class NFA {
     while (word.length > 0) {
       const char = word.pop()
 
-      if (!(char in this.table[state])) {
+      const transitions = this.getTransitions([ state ])
+      if (!transitions.includes(char)) {
         return false
       }
 
-      // Holy!!! This is ugly
-      state = this.table[state][char].values().next().value
+      // Assumes it is deterministic
+      state = this.table[state][char][0]
     }
 
-    return this.accept.has(state)
+    return this.accept.includes(state)
   }
 
   /**
@@ -119,15 +126,17 @@ class NFA {
    * @return {Boolean} True if deterministic, false otherwise.
    */
   isDeterministic () {
-    for (let state in this.table) {
-      const row = this.table[state]
-      for (let alpha in row) {
-        const destiny = row[alpha]
-        if (destiny.size > 1) {
+    const rows = Object.values(this.table)
+
+    for (const row of rows) {
+      for (const symbol in row) {
+        const destination = row[symbol]
+        if (destination.length > 1) {
           return false
         }
       }
     }
+
     return true
   }
 
@@ -138,45 +147,45 @@ class NFA {
     this.removeEpslon()
 
     const newTable = {}
+    const newAccept = []
     const stack = [ [ this.start ] ]
 
     // Iterate over possible transitions
     while (stack.length > 0) {
       const currentStates = stack.pop()
-      const stateName = currentStates.join()
+      const currentStateName = currentStates.join()
 
-      newTable[stateName] = {}
+      newTable[currentStateName] = {}
 
       const transitions = this.getTransitions(currentStates)
-      for (let char of transitions) {
-        const reachableSet = this.getReach(currentStates, char)
-        const reachableStates = Array.from(reachableSet).sort()
-        const reachableName = reachableStates.join()
+      for (const symbol of transitions) {
+        const reachable = this.getReach(currentStates, symbol)
+        const reachableName = reachable.join()
 
         if (!(reachableName in newTable)) {
-          stack.push(reachableStates)
+          stack.push(reachable)
         }
 
         // Update new table
-        newTable[stateName][char] = new Set([ reachableName ])
+        newTable[currentStateName][symbol] = [ reachableName ]
       }
     }
 
     // Find final states
-    const acceptStates = []
-    for (let state in newTable) {
-      for (let accept of this.accept) {
+    for (const state in newTable) {
+      for (const accept of this.accept) {
         const containsFinal = state.indexOf(accept) !== -1
         if (containsFinal) {
-          acceptStates.push(state)
+          newAccept.push(state)
           break
         }
       }
     }
 
     // Update properties
-    this.accept = new Set(acceptStates)
+    this.accept = newAccept.sort()
     this.table = newTable
+    this.fillTransitions()
   }
 
   /**
@@ -189,13 +198,19 @@ class NFA {
   getTransitions (states) {
     const set = new Set()
 
-    for (let state of states) {
-      Object
-        .keys(this.table[state])
-        .forEach(i => set.add(i))
+    for (const state of states) {
+      const row = this.table[state]
+
+      for (const transition in row) {
+        const destination = row[transition]
+        if (destination.length !== 0) {
+          set.add(transition)
+        }
+      }
     }
     set.delete('&')
-    return set
+
+    return Array.from(set).sort()
   }
 
   /**
@@ -211,12 +226,16 @@ class NFA {
     const set = new Set()
 
     for (const state of states) {
-      if (symbol in this.table[state]) {
-        this.table[state][symbol].forEach(i => set.add(i))
+      const transitions = Object.keys(this.table[state])
+
+      if (transitions.includes(symbol)) {
+        const row = this.table[state]
+        const destinations = row[symbol]
+        destinations.forEach(i => set.add(i))
       }
     }
 
-    return set
+    return Array.from(set).sort()
   }
 
   /**
@@ -230,31 +249,34 @@ class NFA {
    * 4 -
    */
   removeEpslon () {
+    // New values
     const newTable = {}
     const newAccept = new Set()
 
     for (const state in this.table) {
       newTable[state] = {}
 
+      // Check for the new accepts
       const closure = this.getEpslonClosure([ state ])
       for (const accept of this.accept) {
-        if (closure.has(accept)) {
+        if (closure.includes(accept)) {
           newAccept.add(state)
         }
       }
-      const transitions = this.getTransitions(closure)
 
+      // Get closures
+      const transitions = this.getTransitions(closure)
       for (const symbol of transitions) {
         const reach = this.getReach(closure, symbol)
         const reachClosure = this.getEpslonClosure(reach)
-
         newTable[state][symbol] = reachClosure
       }
     }
 
     // Update object
     this.table = newTable
-    this.accept = newAccept
+    this.accept = Array.from(newAccept).sort()
+    this.fillTransitions()
   }
 
   /**
@@ -265,10 +287,9 @@ class NFA {
    * @return {Set}        Set containing the closure of reach of epslon.
    */
   getEpslonClosure (states) {
-    const symbol = '&'
     const set = new Set(states)
     const visited = new Set()
-    const stack = [ Array.from(states) ]
+    const stack = [ states ]
 
     while (stack.length > 0) {
       const notVisited = stack
@@ -279,15 +300,16 @@ class NFA {
       notVisited.forEach(i => visited.add(i))
 
       // Adds reach to set
-      const nextStates = this.getReach(notVisited, symbol)
+      const nextStates = this.getReach(notVisited, '&')
       nextStates.forEach(i => set.add(i))
-      if (nextStates.size > 0) {
-        stack.push(Array.from(nextStates))
+      if (nextStates.length > 0) {
+        stack.push(nextStates)
       }
     }
 
-    return set
+    return Array.from(set).sort()
   }
+
   /**
    * auto completes the missing transitions of automata
    * transitions table.
@@ -316,39 +338,40 @@ class NFA {
    *
    * @param {number} begin number which q to start.
    */
-  beautifyQn (begin = 0) {
+  beautify (begin = 0, prefix = 'q') {
     const newTable = {}
     const dict = {}
-    dict[this.start] = 'q' + begin
-    begin++
-    // dict construction
-    Object.keys(this.table).forEach(state => {
+
+    // Creates a new state for each, already existing, state
+    dict[this.start] = prefix + begin++
+    for (const state in this.table) {
       if (state !== this.start) {
-        dict[state] = 'q' + begin
-        begin++
+        dict[state] = prefix + begin++
       }
-    })
-    // new table construction
-    Object.entries(this.table).forEach(([state, row]) => {
-      const beautifulState = dict[state]
-      newTable[beautifulState] = {}
-      Object.entries(row).forEach(([nonTerminalSymbol, reachableStates]) => {
-        const beautifulReachableStates = new Set()
-        for (const state of reachableStates) {
-          beautifulReachableStates.add(dict[state])
-        }
-        newTable[beautifulState][nonTerminalSymbol] = beautifulReachableStates
-      })
-    })
-    // accept states construction
-    const newAccept = new Set()
-    for (const state of this.accept) {
-      newAccept.add(dict[state])
     }
-    // altering object
+
+    // Translate the old table to the new table, with new names
+    const entries = Object.entries(this.table)
+    for (const [state, row] of entries) {
+      const newState = dict[state]
+      newTable[newState] = {}
+
+      const rowEntries = Object.entries(row)
+      for (const [symbol, reachable] of rowEntries) {
+        const newReachable = reachable.map(i => dict[i])
+        newTable[newState][symbol] = newReachable
+      }
+    }
+
+    // Accept states construction
+    const newAccept = this.accept.map(i => dict[i])
+
+    // Updating object
     this.start = dict[this.start]
     this.table = newTable
     this.accept = newAccept
+
+    this.fillTransitions()
   }
 
   /**
@@ -360,46 +383,55 @@ class NFA {
    * @return {NFA} FA that represents FA1 union with FA2.
    */
   static union (fa1, fa2) {
-    // assert both automatas don't have states with same name
-    fa1.beautifyQn()
-    fa2.beautifyQn(Object.keys(fa1).length - 1)
-    // create new initial state
+    // Assert both automatas don't have states with same name
+    fa1.beautify()
+    fa2.beautify(Object.keys(fa1).length)
+
+    // New initial state
     const initialState = 'qinitial'
-    // create acceptStates
-    const finalStates = []
-    if (fa1.accept.has(fa1.start) || fa2.accept.has(fa2.start)) {
+
+    // New accept states
+    const finalStates = fa1.accept.concat(fa2.accept)
+    if (fa1.accept.includes(fa1.start) || fa2.accept.includes(fa2.start)) {
       finalStates.push(initialState)
     }
-    for (const state of fa1.accept) {
-      finalStates.push(state)
-    }
-    for (const state of fa2.accept) {
-      finalStates.push(state)
-    }
-    // create new transitions table
+
+    // New table
     const newTable = {}
-    const visitedTransitions = new Set()
-    Object.entries(fa1.table).forEach(([state, row]) => {
-      newTable[state] = row
-    })
-    Object.entries(fa2.table).forEach(([state, row]) => {
-      newTable[state] = row
-    })
-    // copies transitions from previous initial states to new initial state
+
+    // Add both automatas transitions to new table
+    Object
+      .entries(fa1.table)
+      .forEach(([state, row]) => { newTable[state] = row })
+    Object
+      .entries(fa2.table)
+      .forEach(([state, row]) => { newTable[state] = row })
+
+    // Creates new initial state
     newTable[initialState] = {}
-    Object.entries(fa1.table[fa1.start]).forEach(([transition, states]) => {
-      newTable[initialState][transition] = new Set(states)
-      if (fa2.table[fa2.start][transition]) {
-        newTable[initialState][transition].add(...fa2.table[fa2.start][transition])
+
+    // So it fills up the ommitted transitions
+    const nfa = new NFA(initialState, finalStates, newTable)
+
+    // Copies transitions from previous initial states to new initial state
+    const start1 = Object.entries(fa1.table[fa1.start])
+    const start2 = Object.entries(fa2.table[fa2.start])
+
+    for (const [symbol, states] of start1) {
+      nfa.table[initialState][symbol].push(...states)
+    }
+    for (const [symbol, states] of start2) {
+      nfa.table[initialState][symbol].push(...states)
+    }
+
+    // Sort states transitions by state name
+    for (const row of Object.values(nfa.table)) {
+      for (const transition of Object.values(row)) {
+        transition.sort()
       }
-      visitedTransitions.add(transition)
-    })
-    Object.entries(fa2.table[fa2.start]).forEach(([transition, states]) => {
-      if (!visitedTransitions.has(transition)) {
-        newTable[initialState][transition] = new Set(states)
-      }
-    })
-    return new NFA(initialState, finalStates, newTable)
+    }
+
+    return nfa
   }
 
   /**
@@ -435,7 +467,7 @@ class NFA {
       }
     }
     return new NFA(newStart, newAccept, newTable)
-  }
+}
 
   /**
    * @brief produces the automata representing the star of the
@@ -635,7 +667,7 @@ class NFA {
     minimal.removeUnreachable()
     minimal.removeDead()
     minimal.mergeEquivalents()
-    minimal.beautifyQn()
+    minimal.beautify()
     return minimal
   }
 
@@ -718,4 +750,5 @@ function equals (setA, setB) {
   }
   return false
 }
+
 module.exports = NFA
