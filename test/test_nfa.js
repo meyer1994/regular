@@ -628,7 +628,7 @@ describe('NFA', function () {
     })
   })
 
-  describe.only('#concat', function () {
+  describe('#concat', function () {
     it('should concat two FAs', function () {
       const start0 = 'S'
       const accept0 = [ 'B' ]
