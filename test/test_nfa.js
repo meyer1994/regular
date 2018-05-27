@@ -665,28 +665,28 @@ describe('NFA', function () {
     })
   })
 
-  describe('#star', () => {
-    it('should star a FA', () => {
-      const start0 = 'S'
-      const accept0 = [ 'B' ]
-      const table0 = {
+  describe.only('#star', function () {
+    it('should star a FA', function () {
+      const start = 'S'
+      const accept = [ 'B' ]
+      const table = {
         'S': { 'a': [ 'A' ] },
         'A': { 'b': [ 'B' ] },
         'B': {}
       }
-      const nfa0 = new NFA(start0, accept0, table0)
+      const nfa = new NFA(start, accept, table)
 
-      const expectedStart = 'S'
-      const expectedFinalStates = [ 'B' ]
-      const expectedTable = {
+      const expStart = 'S'
+      const expAccept = [ 'B' ]
+      const expTable = {
         'S': { 'a': [ 'A' ] },
         'A': { 'b': [ 'B' ] },
         'B': { 'a': [ 'A' ] }
       }
+      const expected = new NFA(expStart, expAccept, expTable)
 
-      const nfa0Star = NFA.star(nfa0)
-      const expected = new NFA(expectedStart, expectedFinalStates, expectedTable)
-      assert.deepStrictEqual(nfa0Star, expected)
+      const star = NFA.star(nfa)
+      assert.deepStrictEqual(star, expected)
     })
   })
 
