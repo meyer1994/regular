@@ -476,19 +476,16 @@ class NFA {
    */
   static star (fa) {
     const newStart = fa.start
-    const newTable = Object.assign({}, fa.table)
     const newAccept = fa.accept
-    Object.entries(newTable[newStart]).forEach(([char, states]) => {
+    const newTable = Object.assign({}, fa.table)
+
+    const entries = Object.entries(newTable[newStart])
+    for (const [char, states] of entries) {
       for (const acceptState of newAccept) {
-        if (newTable[acceptState][char] === undefined) {
-          newTable[acceptState][char] = states
-        } else {
-          for (const state of states) {
-            newTable[acceptState][char].add(state)
-          }
-        }
+        newTable[acceptState][char].push(...states)
       }
-    })
+    }
+
     return new NFA(newStart, newAccept, newTable)
   }
 
