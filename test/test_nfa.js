@@ -910,8 +910,8 @@ describe('NFA', function () {
       }
       const expected = new NFA(expStart, expAccept, expTable)
 
-      const minimal = NFA.minimize(nfa)
-      assert.deepStrictEqual(minimal, expected)
+      nfa.minimize()
+      assert.deepStrictEqual(nfa, expected)
     })
   })
 })
