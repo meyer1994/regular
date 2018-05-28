@@ -699,7 +699,10 @@ class NFA {
    * @return {NFA} returns FA that represents the intersection of dfa with dfb.
    */
   static intersection (dfa, dfb) {
-    return NFA.reverse(NFA.union(NFA.reverse(dfa), NFA.reverse(dfb)))
+    const complementA = NFA.complement(dfa)
+    const complementB = NFA.complement(dfb)
+    const union = NFA.union(complementA, complementB)
+    return NFA.complement(union)
   }
 
   /**
@@ -711,7 +714,8 @@ class NFA {
    * @returns returns FA that represents DFA - DFB
    */
   static diff (dfa, dfb) {
-    return NFA.intersection(dfa, NFA.reverse(dfb))
+    const complementB = NFA.complement(dfb)
+    return NFA.intersection(dfa, complementB)
   }
 
   /**
