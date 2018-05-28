@@ -538,7 +538,7 @@ describe('NFA', function () {
   })
 
   describe('#beautify', function () {
-    it('should transform all original states into q0, q1, ..., qn', function () {
+    it('Should transform all original states into q0, q1, ..., qn', function () {
       const start = 'S'
       const accept = [ 'B' ]
       const table = {
@@ -563,7 +563,7 @@ describe('NFA', function () {
   })
 
   describe('#union', function () {
-    it('should unite two FAs', function () {
+    it('Should unite two FAs', function () {
       const start0 = 'S'
       const accept0 = [ 'B' ]
       const table0 = {
@@ -600,8 +600,8 @@ describe('NFA', function () {
     })
   })
 
-  describe('#complete', () => {
-    it('should complete the transitions of a incomplete automata', () => {
+  describe('#complete', function () {
+    it('Should complete the transitions of a incomplete automata', function () {
       const start = 'q0'
       const accept = [ 'qf' ]
       const table = {
@@ -611,6 +611,7 @@ describe('NFA', function () {
         'q3': {},
         'qf': {}
       }
+      const nfa = new NFA(start, accept, table)
 
       const expectedTable = {
         'q0': { 'a': [ 'q1' ], 'b': [ 'q1' ], 'c': [ 'q1' ] },
@@ -620,16 +621,15 @@ describe('NFA', function () {
         'qf': { 'a': [ 'qdead' ], 'b': [ 'qdead' ], 'c': [ 'qdead' ] },
         'qdead': { 'a': [ 'qdead' ], 'b': [ 'qdead' ], 'c': [ 'qdead' ] }
       }
-
-      const nfa1 = new NFA(start, accept, table)
-      nfa1.complete()
       const expected = new NFA(start, accept, expectedTable)
-      assert.deepStrictEqual(nfa1, expected)
+
+      nfa.complete()
+      assert.deepStrictEqual(nfa, expected)
     })
   })
 
   describe('#concat', function () {
-    it('should concat two FAs', function () {
+    it('Should concat two FAs', function () {
       const start0 = 'S'
       const accept0 = [ 'B' ]
       const table0 = {
@@ -665,8 +665,8 @@ describe('NFA', function () {
     })
   })
 
-  describe.only('#star', function () {
-    it('should star a FA', function () {
+  describe('#star', function () {
+    it('Should star a FA', function () {
       const start = 'S'
       const accept = [ 'B' ]
       const table = {
