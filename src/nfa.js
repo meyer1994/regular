@@ -723,14 +723,12 @@ class NFA {
    *
    * @return {NFA} dfa minimized.
    */
-  static minimize (dfa) {
-    const minimal = new NFA(dfa.start, dfa.accept, dfa.table)
-    minimal.determinize()
-    minimal.removeUnreachable()
-    minimal.removeDead()
-    minimal.mergeEquivalents()
-    minimal.beautify()
-    return minimal
+  minimize () {
+    this.determinize()
+    this.removeUnreachable()
+    this.removeDead()
+    this.mergeEquivalents()
+    this.beautify()
   }
 
   /**
@@ -770,19 +768,19 @@ class NFA {
    */
   static complement (dfa) {
     // Apply properties
-    const reversedDFA = new NFA(dfa.start, dfa.accept, dfa.table)
-    reversedDFA.determinize()
-    reversedDFA.complete()
+    const complementedNFA = new NFA(dfa.start, dfa.accept, dfa.table)
+    complementedNFA.determinize()
+    complementedNFA.complete()
 
     // Gets states that are not accept states
     const nonAccept = Object
-      .keys(reversedDFA.table)
-      .filter(i => !reversedDFA.accept.includes(i))
+      .keys(complementedNFA.table)
+      .filter(i => !complementedNFA.accept.includes(i))
 
     // Switch
-    reversedDFA.accept = nonAccept
+    complementedNFA.accept = nonAccept
 
-    return reversedDFA
+    return complementedNFA
   }
 }
 
