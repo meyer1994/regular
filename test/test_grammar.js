@@ -32,13 +32,17 @@ describe('Grammar', function () {
         'S': { 'a': [ 'A' ] },
         'A': { 'a': [ 'S' ] }
       }
-      const dfa = new NFA(start, accept, table)
+      const nfa = new NFA(start, accept, table)
+
       const productions = {
         "S'": [ 'aA', '&' ],
         'S': [ 'aA' ],
         'A': [ 'aS', 'a' ]
       }
-      assert.deepStrictEqual(Grammar.fromNFA(dfa), new Grammar("S'", productions))
+      const expected = new Grammar(start + "'", productions)
+
+      const result = Grammar.fromNFA(nfa)
+      assert.deepStrictEqual(result, expected)
     })
   })
 })
