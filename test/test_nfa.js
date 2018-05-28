@@ -812,28 +812,101 @@ describe('NFA', function () {
     })
   })
 
-  describe.skip('#minimize', function () {
+  describe('#removeState', function () {
+    it('Should remove state from automata', function () {
+      const start = 'A'
+      const accept = [ 'A', 'B' ]
+      const table = {
+        A: { a: [ 'B' ], b: [ 'A' ] },
+        B: { a: [ 'C' ], b: [ 'A' ] },
+        C: { b: [ 'A' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expAccept = [ 'B' ]
+      const expTable = {
+        B: { a: [ 'C' ] },
+        C: { b: [] }
+      }
+      const expected = new NFA('', expAccept, expTable)
+
+      nfa.removeState('A')
+      assert.deepStrictEqual(nfa, expected)
+    })
+  })
+
+  describe('#removeUnreachable', function () {
+    it('Should remove unreachable states', function () {
+      const start = 'A'
+      const accept = [ 'A', 'D', 'G' ]
+      const table = {
+        A: { a: [ 'G' ], b: [ 'B' ] },
+        B: { a: [ 'F' ], b: [ 'E' ] },
+        C: { a: [ 'C' ], b: [ 'G' ] },
+        D: { a: [ 'A' ], b: [ 'H' ] },
+        E: { a: [ 'E' ], b: [ 'A' ] },
+        F: { a: [ 'B' ], b: [ 'C' ] },
+        G: { a: [ 'G' ], b: [ 'F' ] },
+        H: { a: [ 'H' ], b: [ 'D' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expected = {
+        A: { a: [ 'G' ], b: [ 'B' ] },
+        B: { a: [ 'F' ], b: [ 'E' ] },
+        C: { a: [ 'C' ], b: [ 'G' ] },
+        E: { a: [ 'E' ], b: [ 'A' ] },
+        F: { a: [ 'B' ], b: [ 'C' ] },
+        G: { a: [ 'G' ], b: [ 'F' ] }
+      }
+
+      nfa.removeUnreachable()
+      assert.deepStrictEqual(nfa.table, expected)
+    })
+  })
+
+  describe('#removeDead', function () {
+    it('Should remove dead states', function () {
+      const start = 'A'
+      const accept = [ 'A' ]
+      const table = {
+        A: { a: [ 'B' ], b: [ 'A' ] },
+        B: { a: [ 'C' ], b: [ 'B' ] },
+        C: { a: [ 'C' ], b: [ 'B' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expected = {
+        A: { a: [], b: [ 'A' ] }
+      }
+
+      nfa.removeDead()
+      assert.deepStrictEqual(nfa.table, expected)
+    })
+  })
+
+  describe('#minimize', function () {
     it('should minimize a AF', function () {
       const start = 'A'
       const accept = [ 'A', 'D', 'G' ]
       const table = {
-        'A': { 'a': [ 'G' ], 'b': [ 'B' ] },
-        'B': { 'a': [ 'F' ], 'b': [ 'E' ] },
-        'C': { 'a': [ 'C' ], 'b': [ 'G' ] },
-        'D': { 'a': [ 'A' ], 'b': [ 'H' ] },
-        'E': { 'a': [ 'E' ], 'b': [ 'A' ] },
-        'F': { 'a': [ 'B' ], 'b': [ 'C' ] },
-        'G': { 'a': [ 'G' ], 'b': [ 'F' ] },
-        'H': { 'a': [ 'H' ], 'b': [ 'D' ] }
+        A: { a: [ 'G' ], b: [ 'B' ] },
+        B: { a: [ 'F' ], b: [ 'E' ] },
+        C: { a: [ 'C' ], b: [ 'G' ] },
+        D: { a: [ 'A' ], b: [ 'H' ] },
+        E: { a: [ 'E' ], b: [ 'A' ] },
+        F: { a: [ 'B' ], b: [ 'C' ] },
+        G: { a: [ 'G' ], b: [ 'F' ] },
+        H: { a: [ 'H' ], b: [ 'D' ] }
       }
       const nfa = new NFA(start, accept, table)
 
       const expStart = 'q0'
       const expAccept = [ 'q0' ]
       const expTable = {
-        'q0': { 'a': [ 'q0' ], 'b': [ 'q1' ] },
-        'q1': { 'a': [ 'q1' ], 'b': [ 'q2' ] },
-        'q2': { 'a': [ 'q2' ], 'b': [ 'q0' ] }
+        q0: { a: [ 'q0' ], b: [ 'q1' ] },
+        q1: { a: [ 'q1' ], b: [ 'q2' ] },
+        q2: { a: [ 'q2' ], b: [ 'q0' ] }
       }
       const expected = new NFA(expStart, expAccept, expTable)
 
