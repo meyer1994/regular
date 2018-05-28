@@ -311,24 +311,49 @@ class NFA {
   }
 
   /**
+   * Checks if the NFA is complete.
+   *
+   * An automata is complete if there is one transition for each symbol of the
+   * alphabet in every state.
+   *
+   * @return {Boolean} True if complete, false otherwise.
+   */
+  isComplete () {
+    const rows = Object.values(this.table)
+    for (const row of rows) {
+      for (const char of this.alphabet) {
+        if (row[char].length === 0) {
+          return false
+        }
+      }
+    }
+
+    return true
+  }
+
+  /**
    * auto completes the missing transitions of automata
    * transitions table.
    */
-  complete () {
-    const newState = 'qdead'
-    let isComplete = true
-    Object.values(this.table).forEach(row => {
-      for (const char of this.alphabet) {
-        if (row[char] === undefined || row[char] === []) {
-          row[char] = new Set([ newState ])
-          isComplete = false
+  complete (errorState = 'qdead') {
+    let errorAdded = false
+
+    // Add error state where it needs to
+    const rows = Object.values(this.table)
+    for (const row of rows) {
+      for (const symbol of this.alphabet) {
+        if (row[symbol].length === 0) {
+          row[symbol] = [ errorState ]
+          errorAdded = true
         }
       }
-    })
-    if (!isComplete) {
-      this.table[newState] = {}
+    }
+
+    // Create error state
+    if (errorAdded) {
+      this.table[errorState] = {}
       for (const char of this.alphabet) {
-        this.table[newState][char] = new Set([ newState ])
+        this.table[errorState][char] = [ errorState ]
       }
     }
   }
