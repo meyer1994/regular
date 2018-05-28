@@ -1025,4 +1025,30 @@ describe('NFA', function () {
       assert.deepStrictEqual(nfa, expected)
     })
   })
+
+  describe('#reverse', function () {
+    it('should reverse a AF', function () {
+      const start = 'S'
+      const accept = [ 'B' ]
+      const table = {
+        S: { a: [ 'A' ], b: [ 'B' ] },
+        A: { a: [ 'S' ], b: [] },
+        B: { a: [], b: [ 'C' ] },
+        C: { a: [], b: [ 'B' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expStart = 'qinitial'
+      const expAccept = [ 'S' ]
+      const expTable = {
+        qinitial: { '&': [ 'B' ], a: [], b: [] },
+        S: { a: [ 'A' ], b: [] },
+        A: { a: [ 'S' ], b: [] },
+        B: { a: [], b: [ 'S', 'C' ] },
+        C: { a: [], b: [ 'B' ] }
+      }
+      const expected = new NFA(expStart, expAccept, expTable)
+      assert.deepStrictEqual(NFA.reverse(nfa), expected)
+    })
+  })
 })
