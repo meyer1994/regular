@@ -27,15 +27,6 @@ class Grammar {
   }
 
   /**
-   * Converts this regular grammar into a deterministic finite automaton.
-   *
-   * @return {DFA} This regular grammar, converted to an automaton.
-   */
-  toDFA () {
-    throw new Error('TODO')
-  }
-
-  /**
    * Generates a grammar from a non-deterministic finite automaton.
    *
    * @param {NFA} nfa
@@ -43,28 +34,29 @@ class Grammar {
    * @return New Grammar object that represents
    */
   static fromNFA (nfa) {
-    const firstSymbol = nfa.start
+    let firstSymbol = nfa.start
     const productions = {}
-    const aux = new Set()
-    for (let state in nfa.table) {
-      aux.clear()
-      for (let terminalSymbol in nfa.table[state]) {
-        for (let nonTerminalSymbol of nfa.table[state][terminalSymbol]) {
-          aux.add(terminalSymbol + nonTerminalSymbol)
-          if (nfa.accept.has(nonTerminalSymbol)) {
-            aux.add(terminalSymbol)
-          }
+
+    const entries = Object.entries(nfa.table)
+    for (const [state, row] of entries) {
+      const rowEntries = Object.entries(row)
+      productions[state] = []
+      for (const [symbol, states] of rowEntries) {
+        productions[state] = states.map(i => symbol + i)
+        if (states.some(i => nfa.accept.includes(i))) {
+          productions[state].push(symbol)
         }
       }
-      productions[state] = Array.from(aux)
     }
+
     // if language accepts epsilon, add apsilon to the grammar
-    if (nfa.accept.has(nfa.start)) {
-      const newFirstSymbol = firstSymbol + "'"
-      productions[newFirstSymbol] = Array.from(productions[firstSymbol])
-      productions[newFirstSymbol].push('&')
-      return new Grammar(newFirstSymbol, productions)
+    if (nfa.accept.includes(nfa.start)) {
+      const secondSymbol = firstSymbol
+      firstSymbol += "'"
+      productions[firstSymbol] = Array.from(productions[secondSymbol])
+      productions[firstSymbol].push('&')
     }
+
     return new Grammar(firstSymbol, productions)
   }
 
