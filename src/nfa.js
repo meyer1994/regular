@@ -715,24 +715,26 @@ class NFA {
   }
 
   /**
-   * @brief revertes the automata. Everything that was accepted
-   * now is rejected and everything that was rejected now is accepted.
+   * @brief Gets automata that represents the complement of the one passed.
    *
-   * @param {NFA} dfa DFA to be reversed.
+   * @param {NFA} dfa DFA to get the complement.
    *
-   * @return {NFA} reversed DFA.
+   * @return {NFA} Complement of DFA.
    */
-  static reverse (dfa) {
+  static complement (dfa) {
+    // Apply properties
     const reversedDFA = new NFA(dfa.start, dfa.accept, dfa.table)
     reversedDFA.determinize()
     reversedDFA.complete()
-    const newAccept = new Set()
-    Object.keys(reversedDFA.table).forEach(state => {
-      if (!reversedDFA.accept.has(state)) {
-        newAccept.add(state)
-      }
-    })
-    reversedDFA.accept = newAccept
+
+    // Gets states that are not accept states
+    const nonAccept = Object
+      .keys(reversedDFA.table)
+      .filter(i => !reversedDFA.accept.includes(i))
+
+    // Switch
+    reversedDFA.accept = nonAccept
+
     return reversedDFA
   }
 }

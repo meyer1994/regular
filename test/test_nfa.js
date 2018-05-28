@@ -690,30 +690,31 @@ describe('NFA', function () {
     })
   })
 
-  describe('#reverse', () => {
-    it('should reverse a already complete and deterministic FA', () => {
-      const start0 = 'S'
-      const accept0 = [ 'S' ]
-      const table0 = {
+  describe.only('#complement', function () {
+    it('Should get the complement of an already complete and deterministic FA', function () {
+      const start = 'S'
+      const accept = [ 'S' ]
+      const table = {
         'S': { 'a': [ 'A' ], 'b': [ 'S' ] },
         'A': { 'a': [ 'B' ], 'b': [ 'A' ] },
         'B': { 'a': [ 'S' ], 'b': [ 'B' ] }
       }
-      const nfa0 = new NFA(start0, accept0, table0)
+      const nfa = new NFA(start, accept, table)
 
-      const expectedStart = 'S'
-      const expectedFinalStates = [ 'A', 'B' ]
-      const expectedTable = {
+      const expStart = 'S'
+      const expAccept = [ 'A', 'B' ]
+      const expTable = {
         'S': { 'a': [ 'A' ], 'b': [ 'S' ] },
         'A': { 'a': [ 'B' ], 'b': [ 'A' ] },
         'B': { 'a': [ 'S' ], 'b': [ 'B' ] }
       }
+      const expected = new NFA(expStart, expAccept, expTable)
 
-      const reversedNFA0 = NFA.reverse(nfa0)
-      const expected = new NFA(expectedStart, expectedFinalStates, expectedTable)
-      assert.deepStrictEqual(reversedNFA0, expected)
+      const complement = NFA.complement(nfa)
+      assert.deepStrictEqual(complement, expected)
     })
-    it('should reverse a incomplete FA', () => {
+
+    it('Should get the complement of an incomplete FA', function () {
       const start = 'q0'
       const accept = [ 'q0', 'q1' ]
       const table = {
@@ -724,17 +725,19 @@ describe('NFA', function () {
       }
       const nfa = new NFA(start, accept, table)
 
-      const expectedStart = 'q0'
-      const expectedAccept = [ 'q2', 'q3', 'qdead' ]
-      const expectedTable = {
+      const expStart = 'q0'
+      const expAccept = [ 'q2', 'q3', 'qdead' ]
+      const expTable = {
         'q0': { 'a': [ 'q2' ], 'b': [ 'q1' ] },
         'q1': { 'a': [ 'q2' ], 'b': [ 'qdead' ] },
         'q2': { 'a': [ 'q0' ], 'b': [ 'q3' ] },
         'q3': { 'a': [ 'q0' ], 'b': [ 'qdead' ] },
         'qdead': { 'a': [ 'qdead' ], 'b': [ 'qdead' ] }
       }
-      const expected = new NFA(expectedStart, expectedAccept, expectedTable)
-      assert.deepStrictEqual(NFA.reverse(nfa), expected)
+      const expected = new NFA(expStart, expAccept, expTable)
+
+      const complement = NFA.complement(nfa)
+      assert.deepStrictEqual(complement, expected)
     })
   })
 
