@@ -14,7 +14,7 @@ class RE {
     const alpha = reString
       .split('')
       .filter(i => i.match(ALPHABET))
-    this.alphabet = new Set(alpha)
+    this.alphabet = Array.from(new Set(alpha))
   }
 
   toDFA () {
@@ -76,7 +76,7 @@ class RE {
         // Composition already found, just add transition
         if (compMap.has(newCompName)) {
           const oldState = compMap.get(newCompName)
-          table[state][symbol] = new Set([ oldState ])
+          table[state][symbol] = [ oldState ]
           continue
         }
 
@@ -85,7 +85,7 @@ class RE {
         table[newState] = {}
 
         // Add transition from current state to it
-        table[state][symbol] = new Set([ newState ])
+        table[state][symbol] = [ newState ]
 
         // Add to map and stack
         compMap.set(newCompName, newState)
@@ -93,7 +93,7 @@ class RE {
       }
     }
 
-    return new NFA(start, accept, table)
+    return new NFA(start, Array.from(accept), table)
   }
 
   getCompositions () {

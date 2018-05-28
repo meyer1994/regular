@@ -15,11 +15,11 @@ describe('RE', function () {
 
   describe('#alphabet', function () {
     const testAlphabet = [
-      { input: '(ac1*|77*)', expected: new Set('ac177'.split('')) },
-      { input: '(ab|cd)?', expected: new Set('abcd'.split('')) },
-      { input: 'a*?a(a)|a', expected: new Set('a') },
-      { input: '( 1 | 2 | 3 )*', expected: new Set('123'.split('')) },
-      { input: '1|2*|( 7 )*', expected: new Set('127'.split('')) }
+      { input: '(ac1*|77*)', expected: 'ac17'.split('') },
+      { input: '(ab|cd)?', expected: 'abcd'.split('') },
+      { input: 'a*?a(a)|a', expected: 'a'.split('') },
+      { input: '( 1 | 2 | 3 )*', expected: '123'.split('') },
+      { input: '1|2*|( 7 )*', expected: '127'.split('') }
     ]
     testAlphabet.forEach(function (t) {
       it(`Should return the alphabet: ${Array.from(t.expected)}`, function () {
@@ -38,12 +38,12 @@ describe('RE', function () {
       const start = 'q0'
       const accept = [ 'q0', 'q1', 'q3', 'q5' ]
       const table = {
-        q0: { a: new Set([ 'q1' ]), b: new Set([ 'q2' ]) },
-        q1: { b: new Set([ 'q3' ]), c: new Set([ 'q3' ]) },
-        q2: { a: new Set([ 'q4' ]), c: new Set([ 'q5' ]) },
-        q3: { a: new Set([ 'q1' ]) },
-        q4: { c: new Set([ 'q5' ]) },
-        q5: { b: new Set([ 'q2' ]) }
+        q0: { a: [ 'q1' ], b: [ 'q2' ] },
+        q1: { b: [ 'q3' ], c: [ 'q3' ] },
+        q2: { a: [ 'q4' ], c: [ 'q5' ] },
+        q3: { a: [ 'q1' ] },
+        q4: { c: [ 'q5' ] },
+        q5: { b: [ 'q2' ] }
       }
       const expected = new NFA(start, accept, table)
       const result = re.toDFA()
@@ -59,10 +59,10 @@ describe('RE', function () {
       const start = 'q0'
       const accept = [ 'q1', 'q2' ]
       const table = {
-        q0: { a: new Set([ 'q2' ]), b: new Set([ 'q1' ]) },
-        q1: { a: new Set([ 'q0' ]) },
-        q2: { a: new Set([ 'q0' ]), b: new Set([ 'q3' ]) },
-        q3: { a: new Set([ 'q2' ]) }
+        q0: { a: [ 'q2' ], b: [ 'q1' ] },
+        q1: { a: [ 'q0' ] },
+        q2: { a: [ 'q0' ], b: [ 'q3' ] },
+        q3: { a: [ 'q2' ] }
       }
       const expected = new NFA(start, accept, table)
       const result = re.toDFA()
