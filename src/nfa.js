@@ -855,7 +855,39 @@ class NFA {
         newTable[acceptState][char].push(...states)
       }
     }
+    return new NFA(newStart, newAccept, newTable)
+  }
 
+  /**
+   * @brief Gets automata that represents the reverse of the passed one.
+   *
+   * @param {NFA} dfa DFA to get the reverse.
+   *
+   * @return {NFA} Reverse of dfa.
+   */
+  static reverse (dfa) {
+    // Create new start state.
+    const newStart = 'qinitial'
+    // new final state will be previous start state.
+    const newAccept = [dfa.start]
+    // copies dfa table && create & from new Start to previous accept
+    const newTable = { [newStart]: { '&': [...dfa.accept] } }
+    for (const state in dfa.table) {
+      newTable[state] = {}
+      for (const symbol of dfa.alphabet) {
+        newTable[state][symbol] = []
+      }
+    }
+    // reverses all transitions in automata.
+    for (const state in dfa.table) {
+      for (const symbol in dfa.table[state]) {
+        for (const reachableState of dfa.table[state][symbol]) {
+          if (!newTable[reachableState][symbol].includes(state)) {
+            newTable[reachableState][symbol].push(state)
+          }
+        }
+      }
+    }
     return new NFA(newStart, newAccept, newTable)
   }
 }
