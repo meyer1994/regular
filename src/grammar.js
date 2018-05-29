@@ -1,3 +1,4 @@
+const NFA = require('../src/nfa')
 
 class Grammar {
   /**
@@ -69,7 +70,10 @@ class Grammar {
    * @return {Grammar}     Regular grammar that is A union B.
    */
   static union (rga, rgb) {
-    throw new Error('TODO')
+    const nfa1 = NFA.fromGrammar(rga)
+    const nfa2 = NFA.fromGrammar(rgb)
+    const union = NFA.union(nfa1, nfa2)
+    return Grammar.fromNFA(union)
   }
 
   /**
@@ -81,7 +85,10 @@ class Grammar {
    * @return {Grammar}     Regular grammar that is A concatenated with B.
    */
   static concat (rga, rgb) {
-    throw new Error('TODO')
+    const nfa1 = NFA.fromGrammar(rga)
+    const nfa2 = NFA.fromGrammar(rgb)
+    const concat = NFA.concat(nfa1, nfa2)
+    return Grammar.fromNFA(concat)
   }
 
   /**
@@ -92,7 +99,9 @@ class Grammar {
    * @return {Grammar}     Regular grammar that is the closure of A.
    */
   static closure (rga) {
-    throw new Error('TODO')
+    const nfa1 = NFA.fromGrammar(rga)
+    const closure = NFA.star(nfa1)
+    return Grammar.fromNFA(closure)
   }
 
   /**
@@ -104,7 +113,10 @@ class Grammar {
    * @return {Grammar}     Regular grammar that is A intersected with B.
    */
   static intersection (rga, rgb) {
-    throw new Error('TODO')
+    const nfa1 = NFA.fromGrammar(rga)
+    const nfa2 = NFA.fromGrammar(rgb)
+    const intersection = NFA.intersection(nfa1, nfa2)
+    return Grammar.fromNFA(intersection)
   }
 
   /**
@@ -116,7 +128,10 @@ class Grammar {
    * @return {Grammar}     Regular grammar that is A - B.
    */
   static diff (rga, rgb) {
-    throw new Error('TODO')
+    const nfa1 = NFA.fromGrammar(rga)
+    const nfa2 = NFA.fromGrammar(rgb)
+    const diff = NFA.diff(nfa1, nfa2)
+    return Grammar.fromNFA(diff)
   }
 
   /**
@@ -127,7 +142,9 @@ class Grammar {
    * @return {Grammar}     Regular grammar that is the reverse of A.
    */
   static reverse (rga) {
-    throw new Error('TODO')
+    const nfa1 = NFA.fromGrammar(rga)
+    const reverse = NFA.reverse(nfa1)
+    return Grammar.fromNFA(reverse)
   }
 }
 
