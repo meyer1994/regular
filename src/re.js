@@ -123,15 +123,20 @@ class RE {
   }
 
   static intersection (era, erb) {
-    throw new Error('TODO')
+    const nfa1 = RE.toDFA(era)
+    const nfa2 = RE.toDFA(erb)
+    return NFA.intersection(nfa1, nfa2)
   }
 
   static diff (era, erb) {
-    throw new Error('TODO')
+    const nfa1 = RE.toDFA(era)
+    const nfa2 = RE.toDFA(erb)
+    return NFA.diff(nfa1, nfa2)
   }
 
-  static reverse (era, erb) {
-    throw new Error('TODO')
+  static reverse (era) {
+    const nfa1 = RE.toDFA(era)
+    return NFA.reverse(nfa1)
   }
 }
 
