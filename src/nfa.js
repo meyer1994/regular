@@ -35,37 +35,135 @@ class NFA {
     this.accept = accept
     this.table = table
 
+    // Get alphabet
+    const alphabet = new Set()
+    for (const row of this.rows) {
+      Object
+        .keys(row)
+        .forEach(i => alphabet.add(i))
+    }
+    this.alphabet = Array.from(alphabet)
+    this.alphabet.sort()
+
+    // Get states
+    this.states = Object.keys(this.table)
+    this.states.sort()
+
     this.fillTransitions()
   }
 
-  get alphabet () {
-    const set = new Set()
-    const rows = Object.values(this.table)
-
-    for (const row of rows) {
-      Object
-        .keys(row)
-        .forEach(i => set.add(i))
-    }
-
-    return Array.from(set)
+  /**
+   * Returns the rows of the table.
+   *
+   * Same as calling Object.values(this.table)
+   *
+   * @return {Array} Array of objects that represents each row of the table.
+   */
+  get rows () {
+    return Object.values(this.table)
   }
 
   /**
-   * Fill out omitted transitions.
+   * Add symbol to this NFA's alphabet.
    *
-   * It creates an empty array and stores it into the states transitions.
+   * @param {String} symbol Symbol to be added.
    */
-  fillTransitions () {
-    const alphabet = this.alphabet
-    const rows = Object.values(this.table)
+  addSymbol (symbol) {
+    if (this.alphabet.includes(symbol)) {
+      return
+    }
 
-    for (const row of rows) {
-      for (const symbol of alphabet) {
-        if (!(symbol in row)) {
-          row[symbol] = []
+    if (symbol === '&') {
+      return
+    }
+
+    // Add to alphabet
+    this.alphabet.push(symbol)
+    this.alphabet.sort()
+
+    // Add to transitions
+    for (const row of this.rows) {
+      row[symbol] = []
+    }
+  }
+
+  /**
+   * Removes symbol from this NFA's alphabet.
+   *
+   * @param  {String} symbol Symbol to be removed.
+   */
+  removeSymbol (symbol) {
+    const index = this.alphabet.indexOf(symbol)
+    if (index === -1) {
+      return
+    }
+
+    // Remove from alphabet
+    this.alphabet.splice(index, 1)
+
+    // Remove from table
+    for (const row of this.rows) {
+      delete row[symbol]
+    }
+  }
+
+  addState (name, transitions) {
+    if (!this.states.includes(name)) {
+      this.states.push(name)
+      this.states.sort()
+    }
+
+    // Sort transitions
+    this.table[name] = transitions
+    Object.values(transitions).forEach(i => i.sort())
+
+    // Fill transitions that are missing
+    this.fillTransitions()
+  }
+
+  removeState (name) {
+    const index = this.states.indexOf(name)
+    if (index === -1) {
+      return
+    }
+
+    // Remove start
+    if (this.start === name) {
+      this.start = ''
+    }
+
+    // Remove from states
+    this.states.splice(index, 1)
+
+    // Remove from accept
+    this.removeAccept(name)
+
+    // Remove from table
+    delete this.table[name]
+    for (const row of this.rows) {
+      for (const symbol of this.alphabet) {
+        const states = row[symbol]
+        const stateIndex = states.indexOf(name)
+        if (stateIndex !== -1) {
+          states.splice(stateIndex, 1)
         }
       }
+    }
+  }
+
+  addAccept (name) {
+    if (!this.states.includes(name)) {
+      return
+    }
+
+    this.accept.push(name)
+    this.accept.sort()
+  }
+
+  removeAccept (name) {
+    const index = this.accept.indexOf(name)
+    if (index !== -1) {
+      this.accept.splice(index, 1)
     }
   }
 
@@ -126,9 +224,7 @@ class NFA {
    * @return {Boolean} True if deterministic, false otherwise.
    */
   isDeterministic () {
-    const rows = Object.values(this.table)
-
-    for (const row of rows) {
+    for (const row of this.rows) {
       for (const symbol in row) {
         const destination = row[symbol]
         if (destination.length > 1) {
@@ -136,7 +232,6 @@ class NFA {
         }
       }
     }
-
     return true
   }
 
@@ -185,7 +280,25 @@ class NFA {
     // Update properties
     this.accept = newAccept.sort()
     this.table = newTable
+    this.states = Object.keys(newTable).sort()
     this.fillTransitions()
+  }
+
+  /**
+   * Fill out omitted transitions.
+   *
+   * It creates an empty array and stores it into the states transitions.
+   */
+  fillTransitions () {
+    const rows = this.rows
+    for (const row of rows) {
+      for (const symbol of this.alphabet) {
+        if (symbol in row) {
+          continue
+        }
+        row[symbol] = []
+      }
+    }
   }
 
   /**
@@ -277,6 +390,7 @@ class NFA {
     this.table = newTable
     this.accept = Array.from(newAccept).sort()
     this.fillTransitions()
+    this.removeSymbol('&')
   }
 
   /**
@@ -292,9 +406,7 @@ class NFA {
     const stack = [ states ]
 
     while (stack.length > 0) {
-      const notVisited = stack
-        .pop()
-        .filter(i => !visited.has(i))
+      const notVisited = stack.pop().filter(i => !visited.has(i))
 
       // Visits states
       notVisited.forEach(i => visited.add(i))
@@ -319,8 +431,7 @@ class NFA {
    * @return {Boolean} True if complete, false otherwise.
    */
   isComplete () {
-    const rows = Object.values(this.table)
-    for (const row of rows) {
+    for (const row of this.rows) {
       for (const char of this.alphabet) {
         if (row[char].length === 0) {
           return false
@@ -339,9 +450,9 @@ class NFA {
     let errorAdded = false
 
     // Add error state where it needs to
-    const rows = Object.values(this.table)
-    for (const row of rows) {
+    for (const row of this.rows) {
       for (const symbol of this.alphabet) {
+        // Empty transition
         if (row[symbol].length === 0) {
           row[symbol] = [ errorState ]
           errorAdded = true
@@ -349,206 +460,17 @@ class NFA {
       }
     }
 
-    // Create error state
-    if (errorAdded) {
-      this.table[errorState] = {}
-      for (const char of this.alphabet) {
-        this.table[errorState][char] = [ errorState ]
-      }
-    }
-  }
-
-  /**
-   * transforms automaton states into q1, q2, ..., qn.
-   *
-   * @param {number} begin number which q to start.
-   */
-  beautify (begin = 0, prefix = 'q') {
-    const newTable = {}
-    const dict = {}
-
-    // Creates a new state for each, already existing, state
-    dict[this.start] = prefix + begin++
-    for (const state in this.table) {
-      if (state !== this.start) {
-        dict[state] = prefix + begin++
-      }
+    // Nothing to do
+    if (!errorAdded) {
+      return
     }
 
-    // Translate the old table to the new table, with new names
-    const entries = Object.entries(this.table)
-    for (const [state, row] of entries) {
-      const newState = dict[state]
-      newTable[newState] = {}
-
-      const rowEntries = Object.entries(row)
-      for (const [symbol, reachable] of rowEntries) {
-        const newReachable = reachable.map(i => dict[i])
-        newTable[newState][symbol] = newReachable
-      }
+    // Add error state
+    const errorTransitions = {}
+    for (const symbol of this.alphabet) {
+      errorTransitions[symbol] = [ errorState ]
     }
-
-    // Accept states construction
-    const newAccept = this.accept.map(i => dict[i])
-
-    // Updating object
-    this.start = dict[this.start]
-    this.table = newTable
-    this.accept = newAccept
-
-    this.fillTransitions()
-  }
-
-  /**
-   * @brief Calculates FA1 U FA2.
-   *
-   * @param {NFA} fa1 Finite automata 1.
-   * @param {NFA} fa2 Finite automate 2.
-   *
-   * @return {NFA} FA that represents FA1 union with FA2.
-   */
-  static union (fa1, fa2) {
-    // Assert both automatas don't have states with same name
-    fa1.beautify()
-    fa2.beautify(Object.keys(fa1).length)
-
-    // New initial state
-    const initialState = 'qinitial'
-
-    // New accept states
-    const finalStates = fa1.accept.concat(fa2.accept)
-    if (fa1.accept.includes(fa1.start) || fa2.accept.includes(fa2.start)) {
-      finalStates.push(initialState)
-    }
-
-    // New table
-    const newTable = {}
-
-    // Add both automatas transitions to new table
-    Object
-      .entries(fa1.table)
-      .forEach(([state, row]) => { newTable[state] = row })
-    Object
-      .entries(fa2.table)
-      .forEach(([state, row]) => { newTable[state] = row })
-
-    // Creates new initial state
-    newTable[initialState] = {}
-
-    // So it fills up the ommitted transitions
-    const nfa = new NFA(initialState, finalStates, newTable)
-
-    // Copies transitions from previous initial states to new initial state
-    const start1 = Object.entries(fa1.table[fa1.start])
-    const start2 = Object.entries(fa2.table[fa2.start])
-
-    for (const [symbol, states] of start1) {
-      nfa.table[initialState][symbol].push(...states)
-    }
-    for (const [symbol, states] of start2) {
-      nfa.table[initialState][symbol].push(...states)
-    }
-
-    // Sort states transitions by state name
-    for (const row of Object.values(nfa.table)) {
-      for (const transition of Object.values(row)) {
-        transition.sort()
-      }
-    }
-
-    return nfa
-  }
-
-  /**
-   * @brief concatenates FA1 with FA2.
-   *
-   * @param {NFA} fa1 Finite automata 1.
-   * @param {NFA} fa2 Finite automate 2.
-   *
-   * @return {NFA} FA that represents FA1 concatenated with FA2.
-   */
-  static concat (fa1, fa2) {
-    // assert both automatas don't have states with same name
-    fa1.beautify()
-    fa2.beautify(Object.keys(fa1).length)
-
-    const newStart = fa1.start
-    let newTable = Object.assign({}, fa1.table)
-    const newAccept = fa2.accept
-
-    const entries = Object.entries(fa2.table[fa2.start])
-    for (const [char, states] of entries) {
-      for (const finalState of fa1.accept) {
-        newTable[finalState][char].push(...states)
-      }
-    }
-
-    newTable = Object.assign(newTable, fa2.table)
-    if (fa2.accept.includes(fa2.start)) {
-      newAccept.push(...fa1.accept)
-    }
-
-    return new NFA(newStart, newAccept, newTable)
-  }
-
-  /**
-   * @brief produces the automata representing the star of the
-   * original automata.
-   *
-   * @param {NFA} fa original finite automata.
-   *
-   * @return {NFA} FA that is the star of original FA.
-   */
-  static star (fa) {
-    const newStart = fa.start
-    const newAccept = fa.accept
-    const newTable = Object.assign({}, fa.table)
-
-    const entries = Object.entries(newTable[newStart])
-    for (const [char, states] of entries) {
-      for (const acceptState of newAccept) {
-        newTable[acceptState][char].push(...states)
-      }
-    }
-
-    return new NFA(newStart, newAccept, newTable)
-  }
-
-  /**
-   * Remove state
-   * @param  {[type]} states [description]
-   * @return {[type]}        [description]
-   */
-  removeState (state) {
-    // Remove from start
-    if (this.start === state) {
-      this.start = ''
-    }
-
-    // Remove from accept
-    const index = this.accept.indexOf(state)
-    if (index !== -1) {
-      this.accept.splice(index, 1)
-    }
-
-    // Remove from table
-    delete this.table[state]
-
-    // Remove other entries
-    const rows = Object.values(this.table)
-    for (const row of rows) {
-      const rowStates = Object.values(row)
-      for (const states of rowStates) {
-        const index = states.indexOf(state)
-        if (index !== -1) {
-          states.splice(index, 1)
-        }
-      }
-    }
-  }
-
-  get states () {
-    return Object.keys(this.table)
+    this.addState(errorState, errorTransitions)
   }
 
   /**
@@ -706,8 +628,7 @@ class NFA {
     delete this.table[stateB]
 
     // Replace all appearences of state B with state A
-    const rows = Object.values(this.table)
-    for (const row of rows) {
+    for (const row of this.rows) {
       for (const symbol of this.alphabet) {
         if (row[symbol][0] === stateB) {
           row[symbol] = [ stateA ]
@@ -729,6 +650,48 @@ class NFA {
     this.removeDead()
     this.mergeEquivalents()
     this.beautify()
+  }
+
+  /**
+   * transforms automaton states into q1, q2, ..., qn.
+   *
+   * @param {number} begin number which q to start.
+   */
+  beautify (begin = 0, prefix = 'q') {
+    const newTable = {}
+    const dict = {}
+
+    // Creates a new state for each, already existing, state
+    dict[this.start] = prefix + begin++
+    for (const state in this.table) {
+      if (state !== this.start) {
+        dict[state] = prefix + begin++
+      }
+    }
+
+    // Translate the old table to the new table, with new names
+    const entries = Object.entries(this.table)
+    for (const [state, row] of entries) {
+      const newState = dict[state]
+      newTable[newState] = {}
+
+      const rowEntries = Object.entries(row)
+      for (const [symbol, reachable] of rowEntries) {
+        const newReachable = reachable.map(i => dict[i])
+        newTable[newState][symbol] = newReachable
+      }
+    }
+
+    // Accept states construction
+    const newAccept = this.accept.map(i => dict[i])
+
+    // Updating object
+    this.start = dict[this.start]
+    this.table = newTable
+    this.accept = newAccept.sort()
+    this.states = Object.keys(newTable).sort()
+
+    this.fillTransitions()
   }
 
   /**
@@ -773,14 +736,127 @@ class NFA {
     complementedNFA.complete()
 
     // Gets states that are not accept states
-    const nonAccept = Object
-      .keys(complementedNFA.table)
+    const nonAccept = complementedNFA
+      .states
       .filter(i => !complementedNFA.accept.includes(i))
 
     // Switch
     complementedNFA.accept = nonAccept
+    complementedNFA.accept.sort()
 
     return complementedNFA
+  }
+
+  /**
+   * @brief Calculates FA1 U FA2.
+   *
+   * @param {NFA} fa1 Finite automata 1.
+   * @param {NFA} fa2 Finite automate 2.
+   *
+   * @return {NFA} FA that represents FA1 union with FA2.
+   */
+  static union (fa1, fa2) {
+    // Assert both automatas don't have states with same name
+    fa1.beautify()
+    fa2.beautify(fa1.states.length)
+
+    // Merge tables
+    const newTable = Object.assign({}, fa1.table, fa2.table)
+
+    // Merge accepts
+    const newAccept = fa1.accept.concat(fa2.accept).sort()
+
+    // Adds new start
+    const newStart = 'qinitial'
+    newTable[newStart] = {}
+
+    // Adds new start transitions
+    const start1 = fa1.table[fa1.start]
+    const start2 = fa2.table[fa2.start]
+
+    // Merge states
+    const entries = Object.entries(start1)
+    for (const [symbol, states] of entries) {
+      // We can do this concatenation here because it is assumed the NFAs
+      // have the same alphabet. And, all transitions have, at least, an
+      // empty array in it's place
+      const newStates = states.concat(start2[symbol])
+      newTable[newStart][symbol] = newStates
+    }
+
+    // Not proud of this...
+    const newStartTransitions = Object.values(newTable[newStart])
+    for (const states of newStartTransitions) {
+      for (const accept of newAccept) {
+        if (states.includes(accept)) {
+          newAccept.push(newStart)
+          newAccept.sort()
+          return new NFA(newStart, newAccept, newTable)
+        }
+      }
+    }
+
+    return new NFA(newStart, newAccept, newTable)
+  }
+
+  /**
+   * @brief concatenates FA1 with FA2.
+   *
+   * @param {NFA} fa1 Finite automata 1.
+   * @param {NFA} fa2 Finite automate 2.
+   *
+   * @return {NFA} FA that represents FA1 concatenated with FA2.
+   */
+  static concat (fa1, fa2) {
+    // assert both automatas don't have states with same name
+    fa1.beautify()
+    fa2.beautify(fa1.states.length)
+
+    // New start
+    const newStart = fa1.start
+
+    // New accept
+    const newAccept = fa2.accept
+
+    const newTable = Object.assign({}, fa1.table)
+
+    // Add transitions from the first state of fa2 to the last state of fa1
+    const entries = Object.entries(fa2.table[fa2.start])
+    for (const [symbol, states] of entries) {
+      for (const finalState of fa1.accept) {
+        newTable[finalState][symbol].push(...states)
+      }
+    }
+
+    Object.assign(newTable, fa2.table, newTable)
+    if (fa2.accept.includes(fa2.start)) {
+      newAccept.push(...fa1.accept)
+    }
+
+    return new NFA(newStart, newAccept, newTable)
+  }
+
+  /**
+   * @brief produces the automata representing the star of the
+   * original automata.
+   *
+   * @param {NFA} fa original finite automata.
+   *
+   * @return {NFA} FA that is the star of original FA.
+   */
+  static star (fa) {
+    const newStart = fa.start
+    const newAccept = fa.accept
+    const newTable = Object.assign({}, fa.table)
+
+    const entries = Object.entries(newTable[newStart])
+    for (const [char, states] of entries) {
+      for (const acceptState of newAccept) {
+        newTable[acceptState][char].push(...states)
+      }
+    }
+
+    return new NFA(newStart, newAccept, newTable)
   }
 }
 
