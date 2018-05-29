@@ -23,7 +23,7 @@ describe('NFA', function () {
   })
 
   describe('#alphabet', function () {
-    it('Should return the alphabet of NFA', function () {
+    it('Should return the alphabet of NFA, sorted', function () {
       const start = 'S'
       const accept = [ 'A' ]
       const table = {
@@ -158,7 +158,7 @@ describe('NFA', function () {
 
       const expect = [ 'A', 'B', 'C' ]
       const result = nfa.getEpslonClosure([ 'A' ])
-      assert.deepStrictEqual(expect, result)
+      assert.deepStrictEqual(result, expect)
     })
 
     it('Should return the closure of epslon', function () {
@@ -181,7 +181,7 @@ describe('NFA', function () {
 
       const expect = [ '1', '2', '3', '4', '6' ]
       const result = nfa.getEpslonClosure([ '1' ])
-      assert.deepStrictEqual(expect, result)
+      assert.deepStrictEqual(result, expect)
     })
   })
 
@@ -569,7 +569,7 @@ describe('NFA', function () {
       const table0 = {
         S: { a: [ 'A' ] },
         A: { b: [ 'B' ] },
-        B: {}
+        B: { c: [] }
       }
       const nfa0 = new NFA(start0, accept0, table0)
 
@@ -578,20 +578,20 @@ describe('NFA', function () {
       const table1 = {
         S: { a: [ 'A' ] },
         A: { c: [ 'B' ] },
-        B: {}
+        B: { b: [] }
       }
       const nfa1 = new NFA(start1, accept1, table1)
 
       const expStart = 'qinitial'
       const expAccept = [ 'q2', 'q5' ]
       const expTable = {
+        qinitial: { a: [ 'q1', 'q4' ] },
         q0: { a: [ 'q1' ] },
         q1: { b: [ 'q2' ] },
         q2: {},
         q3: { a: [ 'q4' ] },
         q4: { c: [ 'q5' ] },
-        q5: {},
-        qinitial: { a: [ 'q1', 'q4' ] }
+        q5: {}
       }
       const expected = new NFA(expStart, expAccept, expTable)
 
@@ -670,18 +670,18 @@ describe('NFA', function () {
       const start = 'S'
       const accept = [ 'B' ]
       const table = {
-        'S': { 'a': [ 'A' ] },
-        'A': { 'b': [ 'B' ] },
-        'B': {}
+        S: { a: [ 'A' ] },
+        A: { b: [ 'B' ] },
+        B: {}
       }
       const nfa = new NFA(start, accept, table)
 
       const expStart = 'S'
       const expAccept = [ 'B' ]
       const expTable = {
-        'S': { 'a': [ 'A' ] },
-        'A': { 'b': [ 'B' ] },
-        'B': { 'a': [ 'A' ] }
+        S: { a: [ 'A' ] },
+        A: { b: [ 'B' ] },
+        B: { a: [ 'A' ] }
       }
       const expected = new NFA(expStart, expAccept, expTable)
 
@@ -695,18 +695,18 @@ describe('NFA', function () {
       const start = 'S'
       const accept = [ 'S' ]
       const table = {
-        'S': { 'a': [ 'A' ], 'b': [ 'S' ] },
-        'A': { 'a': [ 'B' ], 'b': [ 'A' ] },
-        'B': { 'a': [ 'S' ], 'b': [ 'B' ] }
+        S: { a: [ 'A' ], b: [ 'S' ] },
+        A: { a: [ 'B' ], b: [ 'A' ] },
+        B: { a: [ 'S' ], b: [ 'B' ] }
       }
       const nfa = new NFA(start, accept, table)
 
       const expStart = 'S'
       const expAccept = [ 'A', 'B' ]
       const expTable = {
-        'S': { 'a': [ 'A' ], 'b': [ 'S' ] },
-        'A': { 'a': [ 'B' ], 'b': [ 'A' ] },
-        'B': { 'a': [ 'S' ], 'b': [ 'B' ] }
+        S: { a: [ 'A' ], b: [ 'S' ] },
+        A: { a: [ 'B' ], b: [ 'A' ] },
+        B: { a: [ 'S' ], b: [ 'B' ] }
       }
       const expected = new NFA(expStart, expAccept, expTable)
 
@@ -746,23 +746,23 @@ describe('NFA', function () {
       const start0 = 'S'
       const accept0 = [ 'S', 'A' ]
       const table0 = {
-        'S': { '0': [ 'A' ], '1': [ 'S' ] },
-        'A': { '1': [ 'S' ] }
+        S: { '0': [ 'A' ], '1': [ 'S' ] },
+        A: { '1': [ 'S' ] }
       }
       const nfa0 = new NFA(start0, accept0, table0)
 
       const start1 = 'S'
       const accept1 = [ 'S', 'A' ]
       const table1 = {
-        'S': { '0': [ 'S' ], '1': [ 'A' ] },
-        'A': { '0': [ 'S' ] }
+        S: { '0': [ 'S' ], '1': [ 'A' ] },
+        A: { '0': [ 'S' ] }
       }
       const nfa1 = new NFA(start1, accept1, table1)
 
       const expStart = 'qinitial'
-      const expAccept = [ 'qinitial', 'q0,q4', 'q1,q3' ]
+      const expAccept = [ 'qinitial', 'q0,q4', 'q1,q3' ].sort()
       const expTable = {
-        'qinitial': { '0': [ 'q1,q3' ], '1': [ 'q0,q4' ] },
+        qinitial: { '0': [ 'q1,q3' ], '1': [ 'q0,q4' ] },
         'q1,q3': { '0': [ 'q2,q3' ], '1': [ 'q0,q4' ] },
         'q0,q4': { '0': [ 'q1,q3' ], '1': [ 'q0,q5' ] },
         'q2,q3': { '0': [ 'q2,q3' ], '1': [ 'q2,q4' ] },
@@ -783,23 +783,23 @@ describe('NFA', function () {
       const start0 = 'S'
       const accept0 = [ 'A' ]
       const table0 = {
-        'S': { '0': [ 'A' ] },
-        'A': { '0': [ 'A' ], '1': [ 'A' ] }
+        S: { '0': [ 'A' ] },
+        A: { '0': [ 'A' ], '1': [ 'A' ] }
       }
       const nfa0 = new NFA(start0, accept0, table0)
 
       const start1 = 'S'
       const accept1 = [ 'A' ]
       const table1 = {
-        'S': { '0': [ 'A' ], '1': [ 'S' ] },
-        'A': { '0': [ 'A' ], '1': [ 'S' ] }
+        S: { '0': [ 'A' ], '1': [ 'S' ] },
+        A: { '0': [ 'A' ], '1': [ 'S' ] }
       }
       const nfa1 = new NFA(start1, accept1, table1)
 
       const expStart = 'qinitial'
       const expAccept = [ 'q1,q3' ]
       const expTable = {
-        'qinitial': { '0': [ 'q1,q4' ], '1': [ 'q2,q3' ] },
+        qinitial: { '0': [ 'q1,q4' ], '1': [ 'q2,q3' ] },
         'q1,q4': { '0': [ 'q1,q4' ], '1': [ 'q1,q3' ] },
         'q2,q3': { '0': [ 'q2,q4' ], '1': [ 'q2,q3' ] },
         'q1,q3': { '0': [ 'q1,q4' ], '1': [ 'q1,q3' ] },
@@ -808,6 +808,7 @@ describe('NFA', function () {
       const expected = new NFA(expStart, expAccept, expTable)
 
       const diff = NFA.diff(nfa0, nfa1)
+
       assert.deepStrictEqual(diff, expected)
     })
   })
