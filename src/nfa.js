@@ -890,6 +890,45 @@ class NFA {
     }
     return new NFA(newStart, newAccept, newTable)
   }
+
+  /**
+   * Transforms a grammar into a NFA.
+   *
+   * @param {Grammar} grammar grammar to be transformed into NFA.
+   *
+   * @return {NFA}
+   */
+  static fromGrammar (grammar) {
+    const newState = 'Qnew'
+    const start = grammar.first
+    const accept = [newState]
+    if (grammar.productions[grammar.first].includes('&')) {
+      accept.push(grammar.first)
+    }
+    const table = { [newState]: {} }
+    for (const nonTerminalSymbol in grammar.productions) {
+      table[nonTerminalSymbol] = {}
+      for (const prod of grammar.productions[nonTerminalSymbol]) {
+        if (prod === '&') {
+          continue
+        }
+        if (prod.length === 1) {
+          if (table[nonTerminalSymbol][prod[0]]) {
+            table[nonTerminalSymbol][prod[0]].push(newState)
+          } else {
+            table[nonTerminalSymbol][prod[0]] = [newState]
+          }
+        } else if (prod.length === 2) {
+          if (table[nonTerminalSymbol][prod[0]]) {
+            table[nonTerminalSymbol][prod[0]].push(prod[1])
+          } else {
+            table[nonTerminalSymbol][prod[0]] = [prod[1]]
+          }
+        }
+      }
+    }
+    return new NFA(start, accept, table)
+  }
 }
 
 function combinations (array, size) {

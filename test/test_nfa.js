@@ -1,5 +1,6 @@
 const assert = require('assert')
 const NFA = require('../src/nfa')
+const Grammar = require('../src/grammar')
 
 describe('NFA', function () {
   describe('#constructor', function () {
@@ -1049,6 +1050,26 @@ describe('NFA', function () {
       }
       const expected = new NFA(expStart, expAccept, expTable)
       assert.deepStrictEqual(NFA.reverse(nfa), expected)
+    })
+  })
+
+  describe('#fromGrammar', function () {
+    it('Should convert a grammar to a NFA', function () {
+      const start = 'S'
+      const productions = {
+        'S': [ 'aA', 'a' ],
+        'A': [ 'aS' ]
+      }
+      const grammar = new Grammar(start, productions)
+
+      const expAccept = [ 'Qnew' ]
+      const expTable = {
+        'S': { 'a': [ 'A', 'Qnew' ] },
+        'A': { 'a': [ 'S' ] },
+        Qnew: { a: [] }
+      }
+      const expected = new NFA(start, expAccept, expTable)
+      assert.deepStrictEqual(NFA.fromGrammar(grammar), expected)
     })
   })
 })
