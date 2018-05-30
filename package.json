@@ -17,6 +17,9 @@
       "describe",
       "it",
       "beforeEach"
+    ],
+    "ignore": [
+      "**/interface/*"
     ]
   }
 }
