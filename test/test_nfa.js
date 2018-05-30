@@ -39,6 +39,88 @@ describe('NFA', function () {
     })
   })
 
+  describe('#addSymbol', function () {
+    it('Should add symbol to all states', function () {
+      const start = 'A'
+      const accept = [ 'A' ]
+      const table = {
+        A: { a: [ 'B' ] },
+        B: { a: [ 'A' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expect = {
+        A: { a: [ 'B' ], b: [] },
+        B: { a: [ 'A' ], b: [] }
+      }
+
+      nfa.addSymbol('b')
+      assert.deepStrictEqual(nfa.table, expect)
+    })
+
+    it('Should not do anything if already in alphabet', function () {
+      const start = 'A'
+      const accept = [ 'A' ]
+      const table = {
+        A: { a: [ 'B' ] },
+        B: { a: [ 'A' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expect = {
+        A: { a: [ 'B' ] },
+        B: { a: [ 'A' ] }
+      }
+
+      nfa.addSymbol('a')
+      assert.deepStrictEqual(nfa.table, expect)
+    })
+
+    it('Should not do anything if adding esplon (&)', function () {
+      const start = 'A'
+      const accept = [ 'A' ]
+      const table = {
+        A: { a: [ 'B' ] },
+        B: { a: [ 'A' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const expect = {
+        A: { a: [ 'B' ] },
+        B: { a: [ 'A' ] }
+      }
+
+      nfa.addSymbol('&')
+      assert.deepStrictEqual(nfa.table, expect)
+    })
+  })
+
+  describe('#isComplete', function () {
+    it('Should return true if complete', function () {
+      const start = 'A'
+      const accept = [ 'A' ]
+      const table = {
+        A: { a: [ 'B' ] },
+        B: { a: [ 'A' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      assert(nfa.isComplete())
+    })
+
+    it('Should return false if not complete', function () {
+      const start = 'A'
+      const accept = [ 'A' ]
+      const table = {
+        A: { a: [ 'B' ], b: [ 'A' ] },
+        B: { a: [ 'A' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      assert(!nfa.isComplete())
+    })
+  })
+
   describe('#isDeterministic', function () {
     it('Should return true if deterministic', function () {
       const start = 'S'
