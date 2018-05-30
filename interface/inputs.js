@@ -250,7 +250,6 @@ Vue.component('grammar-input', {
         const nonTerminal = line[0]
         const prods = line.split('->')[1].split('|')
         productions[nonTerminal] = prods
-        console.log(productions)
       }
 
       const grammar = new Grammar(start, productions)
@@ -305,6 +304,7 @@ Vue.component('grammar-input', {
           {{ save.text }}
         </option>
       </select>
+
     </template>
   </card>
   `
@@ -359,6 +359,7 @@ Vue.component('regex-input', {
 
       <button v-if="isValid" @click="load()"> Load regex </button>
       <button v-else disabled> Load regex </button>
+
     </template>
   </card>
   `
