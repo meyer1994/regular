@@ -112,9 +112,6 @@ Vue.component('nfa-input', {
         this.automata.accept = accept
       }
     },
-    states: function () {
-      return this.automata.states
-    },
     table: function () {
       return this.automata.table
     }
@@ -156,7 +153,7 @@ Vue.component('nfa-input', {
         </thead>
 
         <tbody>
-          <tr align="center" v-for="state of states">
+          <tr align="center" v-for="state of automata.states">
             <td>
               <input
                 type="radio"
