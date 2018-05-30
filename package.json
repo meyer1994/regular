@@ -1,6 +1,9 @@
 {
   "name": "regular",
-  "dependencies": {},
+  "dependencies": {
+    "vue": "^2.5.16",
+    "vuex": "^3.0.1"
+  },
   "devDependencies": {
     "istanbul": "^0.4.5",
     "mocha": "^5.1.1",
