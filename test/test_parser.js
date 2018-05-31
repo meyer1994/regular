@@ -112,5 +112,27 @@ describe('Parser', function () {
 
       assert.deepStrictEqual(parser.regex(), expected)
     })
+
+    it('Should parse regular expression with **', function () {
+      const regex = 'a**'
+      const parser = new Parser(regex)
+
+      const result = parser.regex()
+      const expected = {
+        value: '*',
+        left: {
+          value: '*',
+          left: {
+            value: 'a',
+            left: null,
+            right: null
+          },
+          right: null
+        },
+        right: null
+      }
+
+      assert.deepStrictEqual(result, expected)
+    })
   })
 })

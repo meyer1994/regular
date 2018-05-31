@@ -3,6 +3,7 @@ const NFA = require('../src/nfa')
 const VALID_INPUT = /^[\s/|/?/*/.A-Z0-9/(/)]*$/ig
 const ALPHABET = /[A-Z0-9]/i
 const WHITE_SPACE = /\s/gi
+const OPERATORS = /[*|?.]/gi
 
 class RE {
   constructor (reString) {
@@ -180,14 +181,14 @@ class Simone {
 
   down (node) {
     const result = this._down(node)
-    const copy = Array.from(result)
+    const copy = Array.from(result).filter(i => !i.value.match(OPERATORS))
     this.visited.clear()
     return new Set(copy)
   }
 
   up (node) {
     const result = this._up(node)
-    const copy = Array.from(result)
+    const copy = Array.from(result).filter(i => !i.value.match(OPERATORS))
     this.visited.clear()
     return new Set(copy)
   }
@@ -196,6 +197,13 @@ class Simone {
     const right = node.right
     const left = node.left
     const value = node.value
+
+    // Avoid infinite recursions with **
+    if (this.visited.has(node)) {
+      return this.visited
+    }
+
+    this.visited.add(node)
 
     switch (value) {
       case '|':
@@ -211,7 +219,7 @@ class Simone {
         this._down(left)
         break
       default:
-        this.visited.add(node)
+        // Does nothing
         break
     }
 
