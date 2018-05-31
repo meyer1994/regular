@@ -340,12 +340,18 @@ Vue.component('regex-input', {
 Vue.component('match-input', {
   data: function () {
     return {
-      input: ''
+      input: '',
+      selected: null
     }
   },
   computed: {
+    saves: () => store.state.saves,
     match: function () {
-      const result = store.state.automata.match(this.input)
+      if (this.selected === null) {
+        return false
+      }
+
+      const result = this.selected.match(this.input)
       if (result) {
         return true
       }
@@ -364,6 +370,14 @@ Vue.component('match-input', {
     </input>
     <p v-if="match"><strong> Match </strong></p>
     <p v-else> No match </p>
+
+    <select v-model="selected">
+      <option disabled :value="''"> Languages </option>
+      <option v-for="save of saves"
+        :value="save.value">
+        {{ save.text }}
+      </option>
+    </select>
   </card>
   `
 })
