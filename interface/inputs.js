@@ -267,10 +267,16 @@ Vue.component('regex-input', {
       }
 
       const regex = new RE(this.input.replace(/\s/gi, ''))
-      store.commit('addSave', regex.toDFA())
+      const dfa = regex.toDFA()
+      const obj = {
+        text: this.input,
+        value: dfa
+      }
+      store.commit('addSave', obj)
+      store.commit('updateAutomata', dfa)
     },
     isValid: function () {
-      const regexRE = /^[a-z\d\*\?\(\)\|]*$/
+      const regexRE = /^[a-z\d*?()|]*$/
       const input = this.input.replace(/\s/gi, '')
 
       if (!input.match(regexRE)) {
