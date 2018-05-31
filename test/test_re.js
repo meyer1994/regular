@@ -30,7 +30,7 @@ describe('RE', function () {
   })
 
   describe('#toDFA', function () {
-    it('Converts to DFA (1)', function () {
+    it('Converts to DFA', function () {
       const regex = '(ab|ac)*a?|(ba?c)*'
       const re = new RE(regex)
 
@@ -51,7 +51,7 @@ describe('RE', function () {
       assert.deepStrictEqual(result, expected)
     })
 
-    it('Converts to DFA (2)', function () {
+    it('Converts to DFA', function () {
       const regex = '(ba|a(ba)*a)*(b|a(ba)*)'
       const re = new RE(regex)
 
@@ -67,6 +67,41 @@ describe('RE', function () {
       const expected = new NFA(start, accept, table)
       const result = re.toDFA()
       assert.deepStrictEqual(result, expected)
+    })
+
+    it('Converts to DFA', function () {
+      const regex = '(ab*)*'
+      const re = new RE(regex)
+
+      const start = 'q0'
+      const accept = [ 'q0', 'q1' ]
+      const table = {
+        q0: { a: [ 'q1' ] },
+        q1: { a: [ 'q1' ], b: [ 'q1' ] }
+      }
+      const expected = new NFA(start, accept, table)
+      const result = re.toDFA()
+      assert.deepStrictEqual(result, expected)
+    })
+
+    const starTest = [ 2, 3, 4, 5, 6, 7, 8, 9 ]
+    starTest.forEach(function (starNum) {
+      const input = 'a'.padEnd(1 + starNum, '*')
+      it(`Should convert regex with any number of * (${input})`, function () {
+        const re = new RE(input)
+        const nfa = re.toDFA()
+        nfa.minimize()
+        nfa.beautify()
+
+        const start = 'q0'
+        const accept = [ 'q0' ]
+        const table = {
+          q0: { a: [ 'q0' ] }
+        }
+        const expected = new NFA(start, accept, table)
+
+        assert.deepStrictEqual(nfa, expected)
+      })
     })
   })
 })
