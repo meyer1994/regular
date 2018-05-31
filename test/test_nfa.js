@@ -824,7 +824,7 @@ describe('NFA', function () {
   })
 
   describe('#intersection', function () {
-    it('should return the intersection of two FAs.', function () {
+    it('Should return the intersection of two FAs.', function () {
       const start0 = 'S'
       const accept0 = [ 'S', 'A' ]
       const table0 = {
@@ -994,6 +994,34 @@ describe('NFA', function () {
       const expected = new NFA(expStart, expAccept, expTable)
 
       nfa.minimize()
+      assert.deepStrictEqual(nfa, expected)
+    })
+
+    it('Should minimize simple AF', function () {
+      const start = 'q0'
+      const accept = [ 'q5' ]
+      const table = {
+        q0: { a: [ 'q1' ] },
+        q1: { b: [ 'q2' ] },
+        q2: { b: [ 'q4' ] },
+        q3: { b: [ 'q4' ] },
+        q4: { a: [ 'q5' ] },
+        q5: {}
+      }
+      const nfa = new NFA(start, accept, table)
+      nfa.minimize()
+
+      const expStart = 'q0'
+      const expAccept = [ 'q4' ]
+      const expTable = {
+        q0: { a: [ 'q1' ] },
+        q1: { b: [ 'q2' ] },
+        q2: { b: [ 'q3' ] },
+        q3: { a: [ 'q4' ] },
+        q4: {}
+      }
+      const expected = new NFA(expStart, expAccept, expTable)
+
       assert.deepStrictEqual(nfa, expected)
     })
   })
