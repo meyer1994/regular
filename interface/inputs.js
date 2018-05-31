@@ -194,20 +194,28 @@ Vue.component('nfa-input', {
 Vue.component('grammar-input', {
   data: function () {
     return {
-      input: ''
+      input: '',
+      selected: ''
     }
   },
   computed: {
-    saves: () => store.state.saves
+    saves: () => store.state.saves,
+    isValid: {
+      get: function () {
+        const grammarRE = /^[A-Z]'?->[a-z\d&][A-Z]?(\|[a-z\d&][A-Z]?)*$/
+        const input = this.input.split('\n').map(i => i.replace(/\s/gi, ''))
+        for (const line of input) {
+          if (!line.match(grammarRE)) {
+            return false
+          }
+        }
+        return true
+      }
+    }
   },
   methods: {
     load: function () {
-      if (!this.isValid()) {
-        window.alert('Invalid grammar')
-        return
-      }
-
-      const input = this.input
+      const input = this.input.replace(/\s/gi, '')
 
       // Create grammar from text
       const start = input[0]
@@ -216,24 +224,36 @@ Vue.component('grammar-input', {
         const nonTerminal = line[0]
         const prods = line.split('->')[1].split('|')
         productions[nonTerminal] = prods
+        console.log(productions)
       }
 
       const grammar = new Grammar(start, productions)
       const nfa = NFA.fromGrammar(grammar)
+
       store.commit('addSave', {
-        text: input[0],
+        text: input.split('\n')[0],
         value: nfa
       })
+      store.commit('updateAutomata', nfa)
     },
-    isValid: function () {
-      const grammarRE = /^[A-Z]'?->[a-z\d&][A-Z]?(\|[a-z\d&][A-Z]?)*$/
-      const input = this.input.split('\n').map(i => i.replace(/\s/gi, ''))
-      for (const line of input) {
-        if (!line.match(grammarRE)) {
-          return false
+    select: function () {
+      const grammar = Grammar.fromNFA(this.selected)
+
+      // Convert to text
+      const lines = []
+      const productions = Object.assign({}, grammar.productions)
+
+      // Convert all productions to text
+      const entries = Object.entries(productions)
+      for (const [nonTerminal, productions] of entries) {
+        const text = `${nonTerminal} -> ${productions.join(' | ')}`
+        if (nonTerminal === grammar.first) {
+          lines.unshift(text)
+        } else {
+          lines.push(text)
         }
       }
-      return true
+      this.input = lines.join('\n')
     }
   },
   template: `
@@ -247,7 +267,17 @@ Vue.component('grammar-input', {
         placeholder="S -> aS | a"
         v-model="input">
       </textarea>
-      <button @click="load()"> Load grammar </button>
+
+      <button v-if="isValid" @click="load()"> Load grammar </button>
+      <button v-else disabled> Load grammar </button>
+
+      <select v-model="selected" @change="select()">
+        <option disabled :value="''"> Languages </option>
+        <option v-for="save of saves"
+          :value="save.value">
+          {{ save.text }}
+        </option>
+      </select>
     </template>
   </card>
   `
