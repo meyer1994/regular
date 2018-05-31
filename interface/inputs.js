@@ -289,24 +289,9 @@ Vue.component('regex-input', {
       input: ''
     }
   },
-  methods: {
-    load: function () {
-      if (!this.isValid()) {
-        window.alert('Invalid regex')
-        return
-      }
-
-      const regex = new RE(this.input.replace(/\s/gi, ''))
-      const dfa = regex.toDFA()
-      const obj = {
-        text: this.input,
-        value: dfa
-      }
-      store.commit('addSave', obj)
-      store.commit('updateAutomata', dfa)
-    },
+  computed: {
     isValid: function () {
-      const regexRE = /^[a-z\d*?()|]*$/
+      const regexRE = /^[a-z\d*?()|]+$/
       const input = this.input.replace(/\s/gi, '')
 
       if (!input.match(regexRE)) {
@@ -321,6 +306,18 @@ Vue.component('regex-input', {
       }
     }
   },
+  methods: {
+    load: function () {
+      const regex = new RE(this.input.replace(/\s/gi, ''))
+      const dfa = regex.toDFA()
+      const obj = {
+        text: this.input,
+        value: dfa
+      }
+      store.commit('addSave', obj)
+      store.commit('updateAutomata', dfa)
+    }
+  },
   template: `
   <card>
     <h5> Regex </h5>
@@ -332,7 +329,9 @@ Vue.component('regex-input', {
         placeholder="aa*"
         v-model="input">
       </textarea>
-      <button @click="load()"> Load regex </button>
+
+      <button v-if="isValid" @click="load()"> Load regex </button>
+      <button v-else disabled> Load regex </button>
     </template>
   </card>
   `
