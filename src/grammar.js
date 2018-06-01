@@ -43,7 +43,9 @@ class Grammar {
       const rowEntries = Object.entries(row)
       productions[state] = []
       for (const [symbol, states] of rowEntries) {
-        productions[state] = states.map(i => symbol + i)
+        for (const reachState of states) {
+          productions[state].push(symbol + reachState)
+        }
         if (states.some(i => nfa.accept.includes(i))) {
           productions[state].push(symbol)
         }
@@ -73,6 +75,8 @@ class Grammar {
     const nfa1 = NFA.fromGrammar(rga)
     const nfa2 = NFA.fromGrammar(rgb)
     const union = NFA.union(nfa1, nfa2)
+    union.minimize()
+    union.beautifyABC()
     return Grammar.fromNFA(union)
   }
 
@@ -88,6 +92,8 @@ class Grammar {
     const nfa1 = NFA.fromGrammar(rga)
     const nfa2 = NFA.fromGrammar(rgb)
     const concat = NFA.concat(nfa1, nfa2)
+    concat.minimize()
+    concat.beautifyABC()
     return Grammar.fromNFA(concat)
   }
 
@@ -101,6 +107,8 @@ class Grammar {
   static closure (rga) {
     const nfa1 = NFA.fromGrammar(rga)
     const closure = NFA.star(nfa1)
+    closure.minimize()
+    closure.beautifyABC()
     return Grammar.fromNFA(closure)
   }
 
@@ -116,6 +124,8 @@ class Grammar {
     const nfa1 = NFA.fromGrammar(rga)
     const nfa2 = NFA.fromGrammar(rgb)
     const intersection = NFA.intersection(nfa1, nfa2)
+    intersection.minimize()
+    intersection.beautifyABC()
     return Grammar.fromNFA(intersection)
   }
 
@@ -131,6 +141,8 @@ class Grammar {
     const nfa1 = NFA.fromGrammar(rga)
     const nfa2 = NFA.fromGrammar(rgb)
     const diff = NFA.diff(nfa1, nfa2)
+    diff.minimize()
+    diff.beautifyABC()
     return Grammar.fromNFA(diff)
   }
 
@@ -144,6 +156,8 @@ class Grammar {
   static reverse (rga) {
     const nfa1 = NFA.fromGrammar(rga)
     const reverse = NFA.reverse(nfa1)
+    reverse.minimize()
+    reverse.beautifyABC()
     return Grammar.fromNFA(reverse)
   }
 }

@@ -127,25 +127,23 @@ class NFA {
       return
     }
 
-    // Remove start
-    if (this.start === name) {
-      this.start = ''
-    }
+    // Don't remove start
+    if (this.start !== name) {
+      // Remove from states
+      this.states.splice(index, 1)
 
-    // Remove from states
-    this.states.splice(index, 1)
+      // Remove from accept
+      this.removeAccept(name)
 
-    // Remove from accept
-    this.removeAccept(name)
-
-    // Remove from table
-    delete this.table[name]
-    for (const row of this.rows) {
-      for (const symbol of this.alphabet) {
-        const states = row[symbol]
-        const stateIndex = states.indexOf(name)
-        if (stateIndex !== -1) {
-          states.splice(stateIndex, 1)
+      // Remove from table
+      delete this.table[name]
+      for (const row of this.rows) {
+        for (const symbol of this.alphabet) {
+          const states = row[symbol]
+          const stateIndex = states.indexOf(name)
+          if (stateIndex !== -1) {
+            states.splice(stateIndex, 1)
+          }
         }
       }
     }
@@ -653,6 +651,55 @@ class NFA {
   }
 
   /**
+   * transforms automaton states into S, A, ..., Z.
+   *
+   * @param {number} begin number which q to start.
+   */
+  beautifyABC (begin = 65) {
+    // A ... Z: 65 ... 90
+    if (Object.keys(this.table).length > 26) {
+      throw Error('too many states')
+    }
+    const newTable = {}
+    const dict = {}
+
+    // Creates a new state for each, already existing, state
+    dict[this.start] = String.fromCharCode(83) // S = 83
+    for (const state in this.table) {
+      if (state !== this.start) {
+        if (begin === 83) {
+          begin++
+        }
+        dict[state] = String.fromCharCode(begin++)
+      }
+    }
+
+    // Translate the old table to the new table, with new names
+    const entries = Object.entries(this.table)
+    for (const [state, row] of entries) {
+      const newState = dict[state]
+      newTable[newState] = {}
+
+      const rowEntries = Object.entries(row)
+      for (const [symbol, reachable] of rowEntries) {
+        const newReachable = reachable.map(i => dict[i])
+        newTable[newState][symbol] = newReachable
+      }
+    }
+
+    // Accept states construction
+    const newAccept = this.accept.map(i => dict[i])
+
+    // Updating object
+    this.start = dict[this.start]
+    this.table = newTable
+    this.accept = newAccept.sort()
+    this.states = Object.keys(newTable).sort()
+
+    this.fillTransitions()
+  }
+
+  /**
    * transforms automaton states into q1, q2, ..., qn.
    *
    * @param {number} begin number which q to start.
@@ -784,16 +831,10 @@ class NFA {
       newTable[newStart][symbol] = newStates
     }
 
-    // Not proud of this...
-    const newStartTransitions = Object.values(newTable[newStart])
-    for (const states of newStartTransitions) {
-      for (const accept of newAccept) {
-        if (states.includes(accept)) {
-          newAccept.push(newStart)
-          newAccept.sort()
-          return new NFA(newStart, newAccept, newTable)
-        }
-      }
+    // Adds newStart to final states if previous start was a accept state
+    if (fa1.accept.includes(fa1.start) || fa2.accept.includes(fa2.start)) {
+      newAccept.push(newStart)
+      newAccept.sort()
     }
 
     return new NFA(newStart, newAccept, newTable)
