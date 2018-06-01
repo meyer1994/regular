@@ -28,6 +28,56 @@ class Grammar {
   }
 
   /**
+   * Return the possible senteces that this grammar can generate.
+   *
+   * @param  {Number} num Size limit of the sentences to be generated.
+   *
+   * @return {Array}      Array with all the generated sentences.
+   */
+  enumerate (num) {
+    const sentences = new Set([ this.first ])
+
+    while (true) {
+      const newSet = new Set(Array.from(sentences))
+
+      for (const sentence of sentences) {
+        const match = sentence.match(/^([a-z]*)([A-Z]'?)$/)
+        if (match === null) {
+          continue
+        }
+
+        const last = match[2]
+        const substring = match[1]
+        const productions = this.productions[last]
+        for (const production of productions) {
+          if (production === '&') {
+            newSet.add('&')
+            continue
+          }
+
+          const newSentence = substring + production
+          if (newSentence.length <= num) {
+            newSet.add(newSentence)
+          }
+        }
+      }
+
+      // No change
+      if (newSet.size === sentences.size) {
+        break
+      }
+
+      // Union of sets
+      newSet.forEach(i => sentences.add(i))
+    }
+
+    return Array
+      .from(sentences)
+      .filter(i => i.match(/^([a-z\d]*|&)$/g))
+      .sort()
+  }
+
+  /**
    * Generates a grammar from a non-deterministic finite automaton.
    *
    * @param {NFA} nfa

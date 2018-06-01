@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
 
-  <title>My template</title>
+  <title> Regular </title>
 
-  <meta name="description" content="My template">
+  <meta name="description" content="Regular">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="robots" content="index, follow">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
@@ -16,6 +16,12 @@
 
 <body>
   <div class="full" id="app">
+
+    <section>
+      <h1> Regular </h1>
+    </section>
+
+    <hr>
 
     <!-- Selector -->
     <section>
@@ -29,6 +35,22 @@
         :automata="$store.state.automata"
         :title="'Editor'">
       </nfa-input>
+    </section>
+
+    <hr>
+
+    <!-- Grammar and regex -->
+    <section mt->
+      <grid>
+      <!-- Regex -->
+      <div col="1/2">
+        <regex-input></regex-input>
+      </div>
+
+      <!-- Grammar -->
+      <div col="1/2">
+        <grammar-input></grammar-input>
+      </div>
     </section>
 
     <hr>
@@ -51,22 +73,6 @@
     <section mt->
       <h2> Operations </h2>
       <operations-input></operations-input>
-    </section>
-
-    <hr>
-
-    <!-- Grammar and regex -->
-    <section mt->
-      <grid>
-      <!-- Regex -->
-      <div col="1/2">
-        <regex-input></regex-input>
-      </div>
-
-      <!-- Grammar -->
-      <div col="1/2">
-        <grammar-input></grammar-input>
-      </div>
     </section>
 
   </div>
