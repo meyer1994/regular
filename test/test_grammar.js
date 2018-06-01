@@ -259,9 +259,9 @@ describe('Grammar', function () {
     })
 
     it('Should return all sentences up to a number, with epslon', function () {
-      const first = 'S'
+      const first = "S'"
       const productions = {
-        S: [ 'aA', '&' ],
+        "S'": [ 'aA', '&' ],
         A: [ 'b' ]
       }
       const grammar = new Grammar(first, productions)
@@ -272,10 +272,10 @@ describe('Grammar', function () {
     })
 
     it('Should return empty to a non productive grammar', function () {
-      const first = 'S'
+      const first = "S'"
       const productions = {
-        S: [ 'aA' ],
-        A: [ 'bS' ]
+        "S'": [ 'aA' ],
+        A: [ "bS'" ]
       }
       const grammar = new Grammar(first, productions)
 
