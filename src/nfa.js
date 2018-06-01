@@ -154,8 +154,10 @@ class NFA {
       return
     }
 
-    this.accept.push(name)
-    this.accept.sort()
+    if (!this.accept.includes(name)) {
+      this.accept.push(name)
+      this.accept.sort()
+    }
   }
 
   removeAccept (name) {
