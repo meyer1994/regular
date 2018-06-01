@@ -917,6 +917,72 @@ describe('NFA', function () {
       nfa.removeState('B')
       assert.deepStrictEqual(nfa, expected)
     })
+
+    it('Should do nothin when trying to remove inexistent state', function () {
+      const start = 'A'
+      const accept = [ 'A', 'B' ]
+      const table = {
+        A: { a: [ 'B' ], b: [ 'A' ] },
+        B: { a: [ 'C' ], b: [ 'A' ] },
+        C: { b: [ 'A' ] }
+      }
+      const nfa = new NFA(start, accept, table)
+      const expected = new NFA(start, accept, table)
+      nfa.removeState('D')
+      nfa.removeState('E')
+
+      assert.deepStrictEqual(nfa, expected)
+    })
+  })
+
+  describe('#removeAccept', function () {
+    const start = 'S'
+    const accept = [ 'A,C', 'C' ]
+    const table = {
+      'S': { a: [ 'A,B' ] },
+      'A,B': { a: [ 'A,C' ], b: [ 'B' ] },
+      'A,C': { a: [ 'A,C' ] },
+      'B': { a: [ 'C' ], b: [ 'B' ] },
+      'C': {}
+    }
+    const nfa = new NFA(start, accept, table)
+
+    it('Should do nothin when trying to remove inexistent state', function () {
+      nfa.removeAccept('A')
+      const expected = [ 'A,C', 'C' ]
+      assert.deepStrictEqual(nfa.accept, expected)
+    })
+
+    it('Should remove from accept', function () {
+      nfa.removeAccept('C')
+      const expected = [ 'A,C' ]
+      assert.deepStrictEqual(nfa.accept, expected)
+    })
+  })
+
+  describe('#addAccept', function () {
+    const start = 'S'
+    const accept = [ 'A,C', 'C' ]
+    const table = {
+      'S': { a: [ 'A,B' ] },
+      'A,B': { a: [ 'A,C' ], b: [ 'B' ] },
+      'A,C': { a: [ 'A,C' ] },
+      'B': { a: [ 'C' ], b: [ 'B' ] },
+      'C': {}
+    }
+    const nfa = new NFA(start, accept, table)
+
+    it('Should do nothin when trying to add inexistent state', function () {
+      nfa.addAccept('A')
+      const expected = [ 'A,C', 'C' ].sort()
+      assert.deepStrictEqual(nfa.accept, expected)
+    })
+
+    it('Should add to accept', function () {
+      nfa.addAccept('S')
+      const expected = [ 'A,C', 'C', 'S' ].sort()
+      assert.deepStrictEqual(nfa.accept, expected)
+    })
   })
 
   describe('#removeUnreachable', function () {
