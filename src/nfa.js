@@ -822,13 +822,19 @@ class NFA {
     const start2 = fa2.table[fa2.start]
 
     // Merge states
-    const entries = Object.entries(start1)
-    for (const [symbol, states] of entries) {
-      // We can do this concatenation here because it is assumed the NFAs
-      // have the same alphabet. And, all transitions have, at least, an
-      // empty array in it's place
-      const newStates = states.concat(start2[symbol])
-      newTable[newStart][symbol] = newStates
+    const visitedTransitions = new Set()
+    const entries1 = Object.entries(start1)
+    for (const [symbol, states] of entries1) {
+      newTable[newStart][symbol] = [...states]
+      visitedTransitions.add(symbol)
+    }
+    const entries2 = Object.entries(start2)
+    for (const [symbol, states] of entries2) {
+      if (visitedTransitions.has(symbol)) {
+        newTable[newStart][symbol].push(...states)
+      } else {
+        newTable[newStart][symbol] = [...states]
+      }
     }
 
     // Adds newStart to final states if previous start was a accept state
