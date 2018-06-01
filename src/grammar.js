@@ -41,6 +41,7 @@ class Grammar {
       const newSet = new Set(Array.from(sentences))
 
       for (const sentence of sentences) {
+
         const match = sentence.match(/^([a-z]*)([A-Z]'?)$/)
         if (match === null) {
           continue
@@ -48,6 +49,7 @@ class Grammar {
 
         const last = match[2]
         const substring = match[1]
+
         const productions = this.productions[last]
         for (const production of productions) {
           if (production === '&') {

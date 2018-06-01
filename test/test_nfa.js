@@ -652,7 +652,7 @@ describe('NFA', function () {
       const table0 = {
         S: { a: [ 'A' ] },
         A: { b: [ 'B' ] },
-        B: { c: [] }
+        B: { }
       }
       const nfa0 = new NFA(start0, accept0, table0)
 
@@ -661,7 +661,7 @@ describe('NFA', function () {
       const table1 = {
         S: { a: [ 'A' ] },
         A: { c: [ 'B' ] },
-        B: { b: [] }
+        B: { }
       }
       const nfa1 = new NFA(start1, accept1, table1)
 
