@@ -104,4 +104,55 @@ describe('RE', function () {
       })
     })
   })
+  describe('#intersection', function () {
+    it('Should get the intersection between two regex', function () {
+      const regex1 = '(aa)*'
+      const regex2 = '(aa)*a'
+      const re1 = new RE(regex1)
+      const re2 = new RE(regex2)
+      const intersection = RE.intersection(re1, re2)
+      const expStart = 'S'
+      const expAccept = []
+      const expTable = {
+        S: { a: [] }
+      }
+      const expected = new NFA(expStart, expAccept, expTable)
+      assert.deepStrictEqual(intersection, expected)
+    })
+  })
+
+  describe('#diff', function () {
+    it('Should get the diff between two regex', function () {
+      const regex1 = '(aa)*'
+      const regex2 = '(aa)*a'
+      const re1 = new RE(regex1)
+      const re2 = new RE(regex2)
+      const diff = RE.diff(re1, re2)
+      const expStart = 'S'
+      const expAccept = [ 'S' ]
+      const expTable = {
+        S: { a: [ 'A' ] },
+        A: { a: [ 'S' ] }
+      }
+      const expected = new NFA(expStart, expAccept, expTable)
+      assert.deepStrictEqual(diff, expected)
+    })
+  })
+
+  describe('#reverse', function () {
+    it('Should get the reverse of a regex', function () {
+      const re1 = new RE('(aa)*a(bb)*b')
+      const reverse = RE.reverse(re1)
+      const expStart = 'S'
+      const expAccept = [ 'B' ]
+      const expTable = {
+        S: { b: [ 'A' ] },
+        A: { a: [ 'B' ], b: [ 'S' ] },
+        B: { a: [ 'C' ] },
+        C: { a: [ 'B' ] }
+      }
+      const expected = new NFA(expStart, expAccept, expTable)
+      assert.deepStrictEqual(reverse, expected)
+    })
+  })
 })

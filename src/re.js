@@ -123,20 +123,29 @@ class RE {
   }
 
   static intersection (era, erb) {
-    const nfa1 = RE.toDFA(era)
-    const nfa2 = RE.toDFA(erb)
-    return NFA.intersection(nfa1, nfa2)
+    const nfa1 = era.toDFA()
+    const nfa2 = erb.toDFA()
+    const intersection = NFA.intersection(nfa1, nfa2)
+    intersection.minimize()
+    intersection.beautifyABC()
+    return intersection
   }
 
   static diff (era, erb) {
-    const nfa1 = RE.toDFA(era)
-    const nfa2 = RE.toDFA(erb)
-    return NFA.diff(nfa1, nfa2)
+    const nfa1 = era.toDFA()
+    const nfa2 = erb.toDFA()
+    const diff = NFA.diff(nfa1, nfa2)
+    diff.minimize()
+    diff.beautifyABC()
+    return diff
   }
 
   static reverse (era) {
-    const nfa1 = RE.toDFA(era)
-    return NFA.reverse(nfa1)
+    const nfa1 = era.toDFA()
+    const reverse = NFA.reverse(nfa1)
+    reverse.minimize()
+    reverse.beautifyABC()
+    return reverse
   }
 }
 
