@@ -45,6 +45,7 @@ describe('Grammar', function () {
       assert.deepStrictEqual(result, expected)
     })
   })
+
   describe('#union', function () {
     it('Should unite two grammars', function () {
       const start1 = 'S'
@@ -70,6 +71,7 @@ describe('Grammar', function () {
       assert.deepStrictEqual(union, expected)
     })
   })
+
   describe('#concat', function () {
     it('Should concat two grammars', function () {
       const start1 = 'S'
@@ -95,6 +97,7 @@ describe('Grammar', function () {
       assert.deepStrictEqual(concat, expected)
     })
   })
+
   describe('#closure', function () {
     it("The closure of a even number of a's grammar is the same grammar", function () {
       const start = "S'"
@@ -125,6 +128,7 @@ describe('Grammar', function () {
       assert.deepStrictEqual(closure, expected)
     })
   })
+
   describe('#intersection', function () {
     it('Should intersect two grammars', function () {
       const start1 = 'S'
@@ -149,6 +153,7 @@ describe('Grammar', function () {
       assert.deepStrictEqual(intersection, expected)
     })
   })
+
   describe('#diff', function () {
     it('Should get the difference between two grammars', function () {
       const start1 = 'S'
@@ -184,6 +189,7 @@ describe('Grammar', function () {
       assert.deepStrictEqual(diff, expected)
     })
   })
+
   describe('#reverse', function () {
     it('Should reverse a grammar', function () {
       const start = 'S'
@@ -204,6 +210,78 @@ describe('Grammar', function () {
       }
       const expected = new Grammar(expStart, expProductions)
       assert.deepStrictEqual(reverse, expected)
+    })
+  })
+
+  describe('#enumerate', function () {
+    it('Should return all sentences up to a number', function () {
+      const first = 'S'
+      const productions = {
+        S: [ 'a', 'aS' ]
+      }
+      const grammar = new Grammar(first, productions)
+
+      const result = grammar.enumerate(5)
+      const expected = [ 'a', 'aa', 'aaa', 'aaaa', 'aaaaa' ]
+      assert.deepStrictEqual(result, expected)
+    })
+
+    it('Should return all sentences up to a number', function () {
+      const first = 'S'
+      const productions = {
+        S: [ 'aA' ],
+        A: [ 'b' ]
+      }
+      const grammar = new Grammar(first, productions)
+
+      const result = grammar.enumerate(5)
+      const expected = [ 'ab' ]
+      assert.deepStrictEqual(result, expected)
+    })
+
+    it('Should return all sentences up to a number', function () {
+      const first = 'S'
+      const productions = {
+        // Starts with a and has even #b following
+        // or
+        // Starts with b and has odd #a following
+        S: [ 'aA', 'bC', 'a' ],
+        A: [ 'bB' ],
+        B: [ 'bA', 'b' ],
+        C: [ 'aD', 'a' ],
+        D: [ 'aC' ]
+      }
+      const grammar = new Grammar(first, productions)
+
+      const result = grammar.enumerate(5)
+      const expected = [ 'a', 'abb', 'abbbb', 'ba', 'baaa' ].sort()
+      assert.deepStrictEqual(result, expected)
+    })
+
+    it('Should return all sentences up to a number, with epslon', function () {
+      const first = 'S'
+      const productions = {
+        S: [ 'aA', '&' ],
+        A: [ 'b' ]
+      }
+      const grammar = new Grammar(first, productions)
+
+      const result = grammar.enumerate(5)
+      const expected = [ '&', 'ab' ]
+      assert.deepStrictEqual(result, expected)
+    })
+
+    it('Should return empty to a non productive grammar', function () {
+      const first = 'S'
+      const productions = {
+        S: [ 'aA' ],
+        A: [ 'bS' ]
+      }
+      const grammar = new Grammar(first, productions)
+
+      const result = grammar.enumerate(5)
+      const expected = []
+      assert.deepStrictEqual(result, expected)
     })
   })
 })
