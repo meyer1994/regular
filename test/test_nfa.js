@@ -907,14 +907,14 @@ describe('NFA', function () {
       }
       const nfa = new NFA(start, accept, table)
 
-      const expAccept = [ 'B' ]
+      const expAccept = [ 'A' ]
       const expTable = {
-        B: { a: [ 'C' ] },
-        C: { b: [] }
+        A: { a: [], b: [ 'A' ] },
+        C: { a: [], b: [ 'A' ] }
       }
-      const expected = new NFA('', expAccept, expTable)
+      const expected = new NFA(start, expAccept, expTable)
 
-      nfa.removeState('A')
+      nfa.removeState('B')
       assert.deepStrictEqual(nfa, expected)
     })
   })
