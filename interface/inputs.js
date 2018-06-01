@@ -395,8 +395,6 @@ Vue.component('match-input', {
       placeholder="input"
       type="text">
     </input>
-    <p v-if="match"><strong> Match </strong></p>
-    <p v-else> No match </p>
 
     <label> Language </label>
     <select v-model="selected">
@@ -406,6 +404,9 @@ Vue.component('match-input', {
         {{ save.text }}
       </option>
     </select>
+
+    <p v-if="match"><strong> Match </strong></p>
+    <p v-else> No match </p>
   </card>
   `
 })
@@ -413,19 +414,34 @@ Vue.component('match-input', {
 Vue.component('enumerate-input', {
   data: function () {
     return {
-      input: ''
+      input: '',
+      selected: null
     }
   },
   computed: {
+    saves: () => store.state.saves,
     result: {
       get: function () {
+        if (this.selected === null) {
+          return
+        }
+
         const input = this.input.replace(/\s/gi, '')
-        if (!input.match(/\d\d?/)) {
+        if (!input.match(/\d?\d?\d?\d?/)) {
           return
         }
 
         const int = parseInt(this.input)
-        return store.state.automata.enumerate(int)
+        this.selected.beautifyABC()
+
+        const grammar = Grammar.fromNFA(this.selected)
+        console.log(grammar.first)
+        console.log(grammar.productions)
+
+        const result = grammar.enumerate(int)
+        console.log(result)
+
+        return result
       }
     }
   },
@@ -437,9 +453,19 @@ Vue.component('enumerate-input', {
     <input
       v-model="input"
       placeholder="input"
-      type="text">
+      type="number">
     </input>
-    <p> {{ result }} </p>
+
+    <label> Language </label>
+    <select v-model="selected">
+      <option disabled :value="''"> Languages </option>
+      <option v-for="save of saves"
+        :value="save.value">
+        {{ save.text }}
+      </option>
+    </select>
+
+    <textarea readonly> {{ result }} </textarea>
   </card>
   `
 })
