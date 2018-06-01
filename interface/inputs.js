@@ -84,7 +84,7 @@ Vue.component('nfa-input-controls', {
 })
 
 Vue.component('nfa-input', {
-  props: [ 'automata' ],
+  props: [ 'automata', 'title' ],
   data: function () {
     return {
       headers: [ 'Start', 'Accept', 'Label' ]
@@ -132,61 +132,83 @@ Vue.component('nfa-input', {
 
       console.log('Updating transiton:', state, symbol, input)
       this.automata.table[state][symbol] = input
+    },
+    save: function (nfa) {
+      const name = this.name
+      if (name === '') {
+        return
+      }
+
+      store.commit('addSave', {
+        text: name,
+        value: nfa
+      })
+      this.name = ''
     }
   },
   template: `
   <div>
-    <nfa-input-controls :automata="automata"></nfa-input-controls>
-    <template>
-      <table>
+    <card>
+      <h2> {{ title }} </h2>
+      <label><b tt="Press enter to save"> Save </b></label>
 
-        <thead>
-          <tr align="center">
-            <th v-for="header of headers"> {{ header }} </th>
+      <input
+        type="text"
+        v-model="name"
+        placeholder="name"
+        @change="save(automata.value)"></input>
+      <nfa-input-controls :automata="automata"></nfa-input-controls>
+      <template>
+        <table>
 
-            <th
-              v-for="symbol of alphabet"
-              @click="automata.removeSymbol(symbol)">
-              {{ symbol }}
-            </th>
-          </tr>
-        </thead>
+          <thead>
+            <tr align="center">
+              <th v-for="header of headers"> {{ header }} </th>
 
-        <tbody>
-          <tr align="center" v-for="state of automata.states">
-            <td>
-              <input
-                type="radio"
-                :value="state"
-                v-model="start">
-              <label></label>
-            </td>
+              <th
+                v-for="symbol of alphabet"
+                @click="automata.removeSymbol(symbol)">
+                {{ symbol }}
+              </th>
+            </tr>
+          </thead>
 
-            <td>
-              <input
-                type="checkbox"
-                :value="state"
-                v-model="accept">
-              <label></label>
-            </td>
+          <tbody>
+            <tr align="center" v-for="state of automata.states">
+              <td>
+                <input
+                  type="radio"
+                  :value="state"
+                  v-model="start">
+                <label></label>
+              </td>
 
-            <td @click="automata.removeState(state)">
-              <b tt="Click to remove"> {{ state }} </b>
-            </td>
+              <td>
+                <input
+                  type="checkbox"
+                  :value="state"
+                  v-model="accept">
+                <label></label>
+              </td>
 
-            <td v-for="symbol of alphabet">
-              <input
-                type="text"
-                size="1"
-                placeholder="states"
-                :value="table[state][symbol]"
-                @change="updateTransition(state, symbol, $event)">
-            </td>
-          </tr>
-        </tbody>
+              <td @click="automata.removeState(state)">
+                <b tt="Click to remove"> {{ state }} </b>
+              </td>
 
-      </table>
-    </template>
+              <td v-for="symbol of alphabet">
+                <input
+                  type="text"
+                  size="1"
+                  placeholder="states"
+                  :value="table[state][symbol]"
+                  @change="updateTransition(state, symbol, $event)">
+              </td>
+            </tr>
+          </tbody>
+
+        </table>
+      </template>
+    </card>
   </div>
   `
 })
@@ -371,6 +393,7 @@ Vue.component('match-input', {
     <p v-if="match"><strong> Match </strong></p>
     <p v-else> No match </p>
 
+    <label> Language </label>
     <select v-model="selected">
       <option disabled :value="''"> Languages </option>
       <option v-for="save of saves"
@@ -422,7 +445,15 @@ Vue.component('operations-input', {
       first: null,
       second: null,
       operation: '',
-      operations: [ 'union', 'intersection', 'complement', 'reverse' ],
+      operations: [
+        'union',
+        'intersection',
+        'complement',
+        'reverse',
+        'star',
+        'concatenation',
+        'difference'
+      ],
       steps: [],
       name: ''
     }
@@ -439,9 +470,13 @@ Vue.component('operations-input', {
       // Clear old steps
       this.steps = []
 
+      // Operations
       switch (this.operation) {
         case ('union'):
-          this.steps.push(NFA.union(first, second))
+          this.steps.push({
+            text: 'Union',
+            value: NFA.union(first, second)
+          })
           return
         case ('intersection'):
           const compFirst = NFA.complement(first)
@@ -454,19 +489,41 @@ Vue.component('operations-input', {
             { text: 'Complement of union', value: NFA.complement(union) }
           ]
           return
+        case ('complement'):
+          this.steps.push({
+            text: 'Complement',
+            value: NFA.complement(first)
+          })
+          return
+        case ('reverse'):
+          this.steps.push({
+            text: 'Reverse',
+            value: NFA.reverse(first)
+          })
+          return
+        case ('star'):
+          this.steps.push({
+            text: 'Star',
+            value: NFA.star(first)
+          })
+          return
+        case ('concatenation'):
+          this.steps.push({
+            text: 'Concatenation',
+            value: NFA.concat(first, second)
+          })
+          return
+        case ('difference'):
+          const complementB = NFA.complement(second)
+          this.steps = [
+            { text: 'Complement of second', value: complementB },
+            {
+              text: 'Intersection with the complement',
+              value: NFA.intersection(first, complementB)
+            }
+          ]
+          return
       }
-    },
-    save: function (nfa) {
-      const name = this.name
-      if (name === '') {
-        return
-      }
-
-      store.commit('addSave', {
-        text: name,
-        value: nfa
-      })
-      this.name = ''
     }
   },
   template: `
@@ -500,16 +557,10 @@ Vue.component('operations-input', {
       <hr></hr>
 
       <template v-for="step of steps">
-        <card>
-          <h2> {{ step.text }} </h2>
-          <label><b tt="Press enter to save"> Save </b></label>
-          <input
-            type="text"
-            v-model="name"
-            placeholder="name"
-            @change="save(step.value)"></input>
-          <nfa-input :automata="step.value"></nfa-input>
-        </card>
+        <nfa-input
+          :automata="step.value"
+          :title="step.text">
+        </nfa-input>
       </template>
 
 
