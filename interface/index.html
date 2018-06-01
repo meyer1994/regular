@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+
+  <title> Regular </title>
+
+  <meta name="description" content="Regular">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="robots" content="index, follow">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+  <link rel="stylesheet" href="./bare.min.css" type="text/css">
+
+</head>
+
+<body>
+  <div class="full" id="app">
+
+    <section>
+      <h1> Regular </h1>
+    </section>
+
+    <hr>
+
+    <!-- Selector -->
+    <section>
+      <h2> Selector </h2>
+      <saves-input></saves-input>
+    </section>
+
+    <!-- Automata stuff -->
+    <section mt->
+      <nfa-input
+        :automata="$store.state.automata"
+        :title="'Editor'">
+      </nfa-input>
+    </section>
+
+    <hr>
+
+    <!-- Grammar and regex -->
+    <section mt->
+      <grid>
+      <!-- Regex -->
+      <div col="1/2">
+        <regex-input></regex-input>
+      </div>
+
+      <!-- Grammar -->
+      <div col="1/2">
+        <grammar-input></grammar-input>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- Match and enumerate -->
+    <section mt->
+      <grid>
+        <div col="1/2">
+          <enumerate-input></enumerate-input>
+        </div>
+        <div col="1/2">
+          <match-input></match-input>
+        </div>
+      </grid>
+    </section>
+
+    <hr>
+
+    <!-- Operations -->
+    <section mt->
+      <h2> Operations </h2>
+      <operations-input></operations-input>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <grid>
+        <div col="1/3">
+          <p> Created by
+            <a att href="https://github.com/geovanij2" target="_blank">
+              Geovani
+            </a>
+            and
+            <a att href="https://github.com/meyer1994" target="_blank">
+              João
+            </a>
+          </p>
+        </div>
+
+        <div col="1/3" txt="r">
+          Made with
+          <a att href="http://barecss.com/" target="_blank"> BareCSS </a>
+          and
+          <a att href="https://vuejs.org/" target="_blank"> VueJS </a>
+        </div>
+
+        <div col="1/3" txt="r">
+          <a att href="https://github.com/meyer1994/regular" target="_blank">
+            Github
+          </a>
+        </div>
+      </grid>
+    </footer>
+
+  </div>
+
+  <script src="../node_modules/vuex/dist/vuex.js"></script>
+  <script src="../node_modules/vue/dist/vue.js"></script>
+  <script src="../src/nfa.js"></script>
+  <script src="../src/re.js"></script>
+  <script src="../src/grammar.js"></script>
+  <script src="./inputs.js"></script>
+  <script src="./index.js"></script>
+
+</body>
