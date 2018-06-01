@@ -139,9 +139,14 @@ Vue.component('nfa-input', {
         return
       }
 
+      // copy
+      const start = nfa.start
+      const accept = Array.from(nfa.accept)
+      const table = Object.assign({}, nfa.table)
+
       store.commit('addSave', {
         text: name,
-        value: nfa
+        value: new NFA(start, accept, table)
       })
       this.name = ''
     }
@@ -156,7 +161,7 @@ Vue.component('nfa-input', {
         type="text"
         v-model="name"
         placeholder="name"
-        @change="save(automata.value)"></input>
+        @change="save(automata)"></input>
       <nfa-input-controls :automata="automata"></nfa-input-controls>
       <template>
         <table>
@@ -216,8 +221,7 @@ Vue.component('nfa-input', {
 Vue.component('grammar-input', {
   data: function () {
     return {
-      input: '',
-      selected: ''
+      input: ''
     }
   },
   computed: {
@@ -259,6 +263,7 @@ Vue.component('grammar-input', {
       store.commit('updateAutomata', nfa)
     },
     select: function () {
+      this.selected.beautifyABC()
       const grammar = Grammar.fromNFA(this.selected)
 
       // Convert to text
