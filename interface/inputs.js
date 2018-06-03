@@ -408,14 +408,6 @@ Vue.component('match-input', {
 
     <p v-if="match"><strong> Match </strong></p>
     <p v-else> No match </p>
-
-    <select v-model="selected">
-      <option disabled :value="''"> Languages </option>
-      <option v-for="save of saves"
-        :value="save.value">
-        {{ save.text }}
-      </option>
-    </select>
   </card>
   `
 })
