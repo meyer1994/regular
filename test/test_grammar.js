@@ -44,6 +44,30 @@ describe('Grammar', function () {
       const result = Grammar.fromNFA(nfa)
       assert.deepStrictEqual(result, expected)
     })
+
+    it('Should not create useless productions', function () {
+      const start = 'S'
+      const accept = [ 'S', 'B', 'C' ]
+      const table = {
+        S: { a: ['A'], b: ['B'] },
+        A: { a: ['C'], b: [] },
+        B: { a: [], b: ['B'] },
+        C: { a: [], b: [] }
+      }
+      const nfa = new NFA(start, accept, table)
+
+      const grammar = Grammar.fromNFA(nfa)
+
+      const first = 'S'
+      const productions = {
+        S: ['aA', 'bB', 'b', '&'],
+        A: ['a'],
+        B: ['bB', 'b']
+      }
+      const expected = new Grammar(first, productions)
+
+      assert.deepStrictEqual(grammar, expected)
+    })
   })
 
   describe('#union', function () {
