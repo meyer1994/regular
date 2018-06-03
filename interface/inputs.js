@@ -180,7 +180,7 @@ Vue.component('nfa-input', {
               <th
                 v-for="symbol of alphabet"
                 @click="automata.removeSymbol(symbol)">
-                <b tt="Click to remove"> {{ symbol }} </b>
+                {{ symbol }}
               </th>
             </tr>
           </thead>
@@ -248,11 +248,12 @@ Vue.component('grammar-input', {
   },
   methods: {
     load: function () {
+      const input = this.input.replace(/\s/gi, '')
+
       // Create grammar from text
-      const start = this.input.replace(/\s/gi, '')[0]
+      const start = input[0]
       const productions = {}
-      for (let line of this.input.split('\n')) {
-        line = line.replace(/\s/gi, '')
+      for (const line of input.split('\n')) {
         const nonTerminal = line[0]
         const prods = line.split('->')[1].split('|')
         productions[nonTerminal] = prods
@@ -262,11 +263,11 @@ Vue.component('grammar-input', {
       const nfa = NFA.fromGrammar(grammar)
 
       store.commit('addSave', {
-        text: this.input.split('\n')[0],
+        text: input.split('\n')[0],
         value: nfa
       })
       store.commit('updateAutomata', nfa)
-},
+    },
     select: function () {
       this.selected.beautifyABC()
       const grammar = Grammar.fromNFA(this.selected)
@@ -500,7 +501,7 @@ Vue.component('operations-input', {
     return {
       first: null,
       second: null,
-      operation: 'union',
+      operation: '',
       operations: [
         'union',
         'intersection',
@@ -510,84 +511,75 @@ Vue.component('operations-input', {
         'concatenation',
         'difference'
       ],
+      steps: [],
       name: ''
     }
   },
   computed: {
-    saves: () => store.state.saves,
-    steps: function () {
+    saves: () => store.state.saves
+  },
+  methods: {
+    operate: function () {
       const first = this.first
       const second = this.second
       const op = this.operation
 
-      if (first === null) {
-        return []
-      }
+      // Clear old steps
+      this.steps = []
 
-      // Single operand operations
-      switch (op) {
-        case ('complement'):
-          return [
-            {
-              text: 'Complement',
-              value: NFA.complement(first)
-            }
-          ]
-        case ('reverse'):
-          return [
-            {
-              text: 'Reverse',
-              value: NFA.reverse(first)
-            }
-          ]
-        case ('star'):
-          return [
-            {
-              text: 'Star',
-              value: NFA.star(first)
-            }
-          ]
-      }
-
-      if (second === null) {
-        return []
-      }
-
-      // Two operands
-      switch (op) {
+      // Operations
+      switch (this.operation) {
         case ('union'):
-          return [
-            {
-              text: 'Union',
-              value: NFA.union(first, second)
-            }
-          ]
+          this.steps.push({
+            text: 'Union',
+            value: NFA.union(first, second)
+          })
+          return
         case ('intersection'):
           const compFirst = NFA.complement(first)
           const compSecond = NFA.complement(second)
           const union = NFA.union(compFirst, compSecond)
-          return [
+          this.steps = [
             { text: 'First complement', value: compFirst },
             { text: 'Second complement', value: compSecond },
             { text: 'Union of complements', value: union },
             { text: 'Complement of union', value: NFA.complement(union) }
           ]
+          return
+        case ('complement'):
+          this.steps.push({
+            text: 'Complement',
+            value: NFA.complement(first)
+          })
+          return
+        case ('reverse'):
+          this.steps.push({
+            text: 'Reverse',
+            value: NFA.reverse(first)
+          })
+          return
+        case ('star'):
+          this.steps.push({
+            text: 'Star',
+            value: NFA.star(first)
+          })
+          return
         case ('concatenation'):
-          return [
-            {
-              text: 'Concatenation',
-              value: NFA.concat(first, second)
-            }
-          ]
+          this.steps.push({
+            text: 'Concatenation',
+            value: NFA.concat(first, second)
+          })
+          return
         case ('difference'):
           const complementB = NFA.complement(second)
-          return [
+          this.steps = [
             { text: 'Complement of second', value: complementB },
             {
               text: 'Intersection with the complement',
               value: NFA.intersection(first, complementB)
             }
           ]
+          return
       }
     }
   },
@@ -596,13 +588,13 @@ Vue.component('operations-input', {
     <template>
     <card>
       <span v-for="op of operations">
-        <input type="radio" :value="op" v-model="operation">
+        <input @change="operate()" type="radio" :value="op" v-model="operation">
         <label> {{ op }} </label>
       </span>
 
       <label> First operand </label>
       <select v-model="first">
-        <option disabled :value="''"> First operand </option>
+        <option disabled value=""> First operand </option>
         <option v-for="save of saves"
           :value="save.value">
           {{ save.text }}
@@ -611,7 +603,7 @@ Vue.component('operations-input', {
 
       <label> Second operand </label>
       <select v-model="second">
-        <option disabled :value="''"> Second operand </option>
+        <option disabled value=""> Second operand </option>
         <option v-for="save of saves"
           :value="save.value">
           {{ save.text }}
