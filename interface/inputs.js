@@ -248,12 +248,11 @@ Vue.component('grammar-input', {
   },
   methods: {
     load: function () {
-      const input = this.input.replace(/\s/gi, '')
-
       // Create grammar from text
-      const start = input[0]
+      const start = this.input.replace(/\s/gi, '')[0]
       const productions = {}
-      for (const line of input.split('\n')) {
+      for (let line of this.input.split('\n')) {
+        line = line.replace(/\s/gi, '')
         const nonTerminal = line[0]
         const prods = line.split('->')[1].split('|')
         productions[nonTerminal] = prods
@@ -263,11 +262,11 @@ Vue.component('grammar-input', {
       const nfa = NFA.fromGrammar(grammar)
 
       store.commit('addSave', {
-        text: input.split('\n')[0],
+        text: this.input.split('\n')[0],
         value: nfa
       })
       store.commit('updateAutomata', nfa)
-    },
+},
     select: function () {
       this.selected.beautifyABC()
       const grammar = Grammar.fromNFA(this.selected)

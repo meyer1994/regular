@@ -752,8 +752,10 @@ class NFA {
    * @return {NFA} returns FA that represents the intersection of dfa with dfb.
    */
   static intersection (dfa, dfb) {
-    const complementA = NFA.complement(dfa)
-    const complementB = NFA.complement(dfb)
+    const dfaCopy = new NFA(dfa.start, dfa.accept, dfa.table)
+    const dfbCopy = new NFA(dfb.start, dfb.accept, dfb.table)
+    const complementA = NFA.complement(dfaCopy)
+    const complementB = NFA.complement(dfbCopy)
     const union = NFA.union(complementA, complementB)
     return NFA.complement(union)
   }
@@ -767,8 +769,10 @@ class NFA {
    * @returns returns FA that represents DFA - DFB
    */
   static diff (dfa, dfb) {
-    const complementB = NFA.complement(dfb)
-    return NFA.intersection(dfa, complementB)
+    const dfaCopy = new NFA(dfa.start, dfa.accept, dfa.table)
+    const dfbCopy = new NFA(dfb.start, dfb.accept, dfb.table)
+    const complementB = NFA.complement(dfbCopy)
+    return NFA.intersection(dfaCopy, complementB)
   }
 
   /**
@@ -805,23 +809,25 @@ class NFA {
    * @return {NFA} FA that represents FA1 union with FA2.
    */
   static union (fa1, fa2) {
+    const fa1Copy = new NFA(fa1.start, fa1.accept, fa1.table)
+    const fa2Copy = new NFA(fa2.start, fa2.accept, fa2.table)
     // Assert both automatas don't have states with same name
-    fa1.beautify()
-    fa2.beautify(fa1.states.length)
+    fa1Copy.beautify()
+    fa2Copy.beautify(fa1Copy.states.length)
 
     // Merge tables
-    const newTable = Object.assign({}, fa1.table, fa2.table)
+    const newTable = Object.assign({}, fa1Copy.table, fa2Copy.table)
 
     // Merge accepts
-    const newAccept = fa1.accept.concat(fa2.accept).sort()
+    const newAccept = fa1Copy.accept.concat(fa2Copy.accept).sort()
 
     // Adds new start
     const newStart = 'qinitial'
     newTable[newStart] = {}
 
     // Adds new start transitions
-    const start1 = fa1.table[fa1.start]
-    const start2 = fa2.table[fa2.start]
+    const start1 = fa1Copy.table[fa1Copy.start]
+    const start2 = fa2Copy.table[fa2Copy.start]
 
     // Merge states
     const visitedTransitions = new Set()
@@ -840,7 +846,7 @@ class NFA {
     }
 
     // Adds newStart to final states if previous start was a accept state
-    if (fa1.accept.includes(fa1.start) || fa2.accept.includes(fa2.start)) {
+    if (fa1Copy.accept.includes(fa1Copy.start) || fa2Copy.accept.includes(fa2Copy.start)) {
       newAccept.push(newStart)
       newAccept.sort()
     }
@@ -857,29 +863,31 @@ class NFA {
    * @return {NFA} FA that represents FA1 concatenated with FA2.
    */
   static concat (fa1, fa2) {
+    const fa1Copy = new NFA(fa1.start, fa1.accept, fa1.table)
+    const fa2Copy = new NFA(fa2.start, fa2.accept, fa2.table)
     // assert both automatas don't have states with same name
-    fa1.beautify()
-    fa2.beautify(fa1.states.length)
+    fa1Copy.beautify()
+    fa2Copy.beautify(fa1Copy.states.length)
 
     // New start
-    const newStart = fa1.start
+    const newStart = fa1Copy.start
 
     // New accept
-    const newAccept = fa2.accept
+    const newAccept = fa2Copy.accept
 
-    const newTable = Object.assign({}, fa1.table)
+    const newTable = Object.assign({}, fa1Copy.table)
 
-    // Add transitions from the first state of fa2 to the last state of fa1
-    const entries = Object.entries(fa2.table[fa2.start])
+    // Add transitions from the first state of fa2Copy to the last state of fa1Copy
+    const entries = Object.entries(fa2Copy.table[fa2Copy.start])
     for (const [symbol, states] of entries) {
-      for (const finalState of fa1.accept) {
+      for (const finalState of fa1Copy.accept) {
         newTable[finalState][symbol].push(...states)
       }
     }
 
-    Object.assign(newTable, fa2.table, newTable)
-    if (fa2.accept.includes(fa2.start)) {
-      newAccept.push(...fa1.accept)
+    Object.assign(newTable, fa2Copy.table, newTable)
+    if (fa2Copy.accept.includes(fa2Copy.start)) {
+      newAccept.push(...fa1Copy.accept)
     }
 
     return new NFA(newStart, newAccept, newTable)

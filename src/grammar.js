@@ -86,6 +86,7 @@ class Grammar {
    */
   static fromNFA (nfa) {
     let firstSymbol = nfa.start
+    let firstSymbolInRightSide = false
     const productions = {}
 
     const entries = Object.entries(nfa.table)
@@ -94,22 +95,32 @@ class Grammar {
       productions[state] = []
       for (const [symbol, states] of rowEntries) {
         for (const reachState of states) {
-          productions[state].push(symbol + reachState)
+          // checks if reachState leads to any other state
+          if (nfa.getTransitions([reachState]).length !== 0) {
+            productions[state].push(symbol + reachState)
+          }
+          if (reachState === firstSymbol) {
+            firstSymbolInRightSide = true
+          }
         }
         if (states.some(i => nfa.accept.includes(i))) {
           productions[state].push(symbol)
         }
       }
+      if (productions[state].length === 0 && state !== firstSymbol) {
+        delete productions[state]
+      }
     }
 
     // if language accepts epsilon, add apsilon to the grammar
     if (nfa.accept.includes(nfa.start)) {
-      const secondSymbol = firstSymbol
-      firstSymbol += "'"
-      productions[firstSymbol] = Array.from(productions[secondSymbol])
+      if (firstSymbolInRightSide) {
+        const secondSymbol = firstSymbol
+        firstSymbol += "'"
+        productions[firstSymbol] = Array.from(productions[secondSymbol])
+      }
       productions[firstSymbol].push('&')
     }
-
     return new Grammar(firstSymbol, productions)
   }
 

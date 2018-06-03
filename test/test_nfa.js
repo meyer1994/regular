@@ -1137,5 +1137,29 @@ describe('NFA', function () {
       const expected = new NFA(start, expAccept, expTable)
       assert.deepStrictEqual(NFA.fromGrammar(grammar), expected)
     })
+
+    it('Should convert a grammar to NFA', function () {
+      const first = 'S'
+      const productions = {
+        S: ['aA', 'bB', 'b', '&'],
+        A: ['a'],
+        B: ['bB', 'b']
+      }
+      const grammar = new Grammar(first, productions)
+
+      const nfa = NFA.fromGrammar(grammar)
+
+      const start = 'S'
+      const accept = ['Qnew', 'S']
+      const table = {
+        S: { a: ['A'], b: ['B', 'Qnew'] },
+        A: { a: ['Qnew'] },
+        B: { b: ['B', 'Qnew'] },
+        Qnew: {}
+      }
+      const expected = new NFA(start, accept, table)
+
+      assert.deepStrictEqual(nfa, expected)
+    })
   })
 })
