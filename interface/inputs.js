@@ -72,7 +72,8 @@ Vue.component('nfa-input-controls', {
         </div>
 
         <div col="1/3">
-          <button @click="automata.beautify()"> Beau </button>
+          <button @click="automata.beautify()"> Qn </button>
+          <button @click="automata.beautifyABC()"> ABC </button>
           <button v-if="deterministic" disabled> Det </button>
           <button v-else @click="automata.determinize()"> Det </button>
           <button @click="automata.minimize()"> Mini </button>
