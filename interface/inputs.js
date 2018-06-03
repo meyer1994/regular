@@ -118,13 +118,19 @@ Vue.component('nfa-input', {
   },
   methods: {
     updateTransition: function (state, symbol, event) {
-      const input = event.target.value.replace(/\s/gi, '').split(',').sort()
+      const input = event
+        .target
+        .value
+        .replace(/\s/gi, '')
+        .split(',')
+        .sort()
+
       if (input.some(i => i.match(/^[a-z\d]$/))) {
         window.alert('Invalid transitions')
         return
       }
 
-      const states = this.states
+      const states = this.automata.states
       if (input.some(i => !states.includes(i))) {
         window.alert('One transition foes to a non-existent state')
         return
@@ -384,6 +390,13 @@ Vue.component('match-input', {
         return true
       }
       return false
+    },
+    isDeterministic: function () {
+      if (this.selected === null) {
+        return true
+      }
+
+      return this.selected.isDeterministic()
     }
   },
   template: `
@@ -406,8 +419,15 @@ Vue.component('match-input', {
       </option>
     </select>
 
-    <p v-if="match"><strong> Match </strong></p>
-    <p v-else> No match </p>
+    <template v-if="isDeterministic">
+      <p v-if="match"><strong> Match </strong></p>
+      <p v-else> No match </p>
+    </template>
+    <template v-else>
+      <p><strong> Not deterministic </strong></p>
+      <button @click="selected.determinize()"> Det </button>
+    </template>
+
   </card>
   `
 })
@@ -638,7 +658,7 @@ Vue.component('saves-input', {
           :value="save.value"> {{ save.text }} </option>
       </select>
 
-      <label><b tt="Press enter to save"> Name </b></label>
+      <label><b tt="Press enter to save"> New Language </b></label>
       <input
         type="text"
         placeholder="Name"
