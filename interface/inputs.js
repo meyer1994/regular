@@ -466,7 +466,11 @@ Vue.component('enumerate-input', {
       </option>
     </select>
 
-    <textarea readonly> {{ result }} </textarea>
+    <textarea
+      readonly
+      style="resize: none;">
+      {{ result }}
+    </textarea>
   </card>
   `
 })
