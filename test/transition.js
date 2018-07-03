@@ -11,4 +11,19 @@ describe('Transition', function () {
       assert.equal(result, expected)
     })
   })
+
+  describe('equals', function () {
+    it('Should check if transitions are equal', function () {
+      const t0 = new Transition('q0', 'a', 'q1')
+      const t1 = new Transition('q0', 'b', 'q1')
+      const t2 = new Transition('q0', 'a', 'q1')
+
+      // True
+      assert(t0.equals(t2))
+
+      // False
+      assert(!t0.equals(t1))
+      assert(!t1.equals(t2))
+    })
+  })
 })
