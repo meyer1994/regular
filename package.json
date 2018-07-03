@@ -1,25 +1,30 @@
 {
   "name": "regular",
-  "dependencies": {
-    "vue": "^2.5.16",
-    "vuex": "^3.0.1"
-  },
   "devDependencies": {
-    "istanbul": "^0.4.5",
+    "babel-core": "^6.26.3",
+    "babel-plugin-istanbul": "^4.1.6",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "cross-env": "^5.2.0",
     "mocha": "^5.1.1",
+    "nyc": "^12.0.2",
     "standard": "^11.0.1"
   },
   "scripts": {
-    "test": "standard && istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec"
+    "test": "npm run lint && npm run coverage",
+    "lint": "standard --env mocha",
+    "coverage": "cross-env NODE_ENV=test nyc mocha"
   },
-  "standard": {
-    "globals": [
-      "describe",
-      "it",
-      "beforeEach"
+  "nyc": {
+    "require": [
+      "babel-register"
     ],
-    "ignore": [
-      "**/interface/*"
-    ]
-  }
+    "reporter": [
+      "lcov",
+      "text"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  },
+  "dependencies": {}
 }
