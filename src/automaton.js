@@ -43,7 +43,7 @@ export default class Automaton {
         .filter(i => i.from === state)
         .filter(i => i.symbol === symbol)
         .map(i => i.to)
-      reachableStates.forEach(i => result.add(i))
+      result = reachableStates.union(result)
     }
     return result
   }
@@ -70,6 +70,7 @@ export default class Automaton {
         break
       }
 
+      // Visits the rest
       stack.push(notVisited)
       visited = notVisited.union(visited)
     }
@@ -105,8 +106,8 @@ export default class Automaton {
       }
 
       // At end of input
-      const hasFinal = reachClosure.some(i => this.finals.has(i))
-      return hasFinal
+      const hasFinal = reachClosure.intersect(this.finals)
+      return hasFinal.size > 0
     }
   }
 }
