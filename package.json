@@ -28,6 +28,6 @@
   },
   "dependencies": {},
   "standard": {
-    "globals": ["it", "describe"]
+    "globals": ["it", "describe", "beforeEach"]
   }
 }
