@@ -2,9 +2,9 @@
 /**
  * HashSet class.
  *
- * It is simply an wrapper creted around an common object to act like a set. The
- * hash function is the toString method. It was created with the same methods
- * as the Set class of the std library.
+ * It is simply an wrapper creted around an common object to act like a set.
+ * The hash function is the toString method. It was created with the same
+ * methods as the Set class of the std library.
  *
  * For this class to work properly, all the objects should have a decent
  * toString method to function as a hash function.
@@ -22,6 +22,8 @@ export default class HashSet {
 
   /**
    * Add item to set.
+   *
+   * @return {HashSet} Returns the set itself.
    */
   add (item) {
     this._values[item] = item
@@ -31,7 +33,7 @@ export default class HashSet {
   /**
    * Checks if item is in set.
    *
-   * @return {Boolean}      True if item is in set, false otherwise.
+   * @return {Boolean} True if item is in set, false otherwise.
    */
   has (item) {
     return item in this._values
@@ -49,7 +51,7 @@ export default class HashSet {
   /**
    * Gets the legnth.
    *
-   * @return {number} As the set class, always return 0.
+   * @return {number} As in the Set class, always return 0.
    */
   get length () {
     return 0
@@ -69,7 +71,7 @@ export default class HashSet {
    *
    * @param  {*} item Item to be deleted from set.
    *
-   * @return {boolean}      True if something was removed, false otherwise.
+   * @return {Boolean} True if something was removed, false otherwise.
    */
   delete (item) {
     const has = this.has(item)
