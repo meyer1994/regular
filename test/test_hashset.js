@@ -240,4 +240,22 @@ describe('HashSet', function () {
       assert.equal(result, true)
     })
   })
+
+  describe('toString', function () {
+    it('Should return string representation of set', function () {
+      const set = new HashSet([ 1, 2, 'a' ])
+      const result = set.toString()
+      const expected = JSON.stringify({ 1: 1, 2: 2, a: 'a' })
+      assert.deepEqual(result, expected)
+    })
+  })
+
+  describe('some', function () {
+    it('Should return true if one element return true', function () {
+      const set = new HashSet([ 1, 2, 3 ])
+      const even = i => i % 2 === 0
+      const result = set.some(even)
+      assert.equal(result, true)
+    })
+  })
 })

@@ -220,4 +220,17 @@ export default class HashSet {
   supersetOf (set) {
     return !this.subsetOf(set)
   }
+
+  /**
+   * Calls JSON.stringify on _values
+   *
+   * @return {String} JSON string of _values.
+   */
+  toString () {
+    return JSON.stringify(this._values)
+  }
+
+  some (fn) {
+    return this.values().some(fn)
+  }
 }
