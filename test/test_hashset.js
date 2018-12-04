@@ -5,7 +5,6 @@ describe('HashSet', function () {
   describe('constructor', function () {
     it('Should be empty when no iterable has been passed', function () {
       const set = new HashSet()
-
       const result = set._values
       const expected = {}
       assert.deepEqual(result, expected)
@@ -152,6 +151,93 @@ describe('HashSet', function () {
       set.forEach(i => result.push(i))
       result.sort()
       assert.deepEqual(result, expected)
+    })
+  })
+
+  describe('union', function () {
+    it('Should make the union of sets and return a new set', function () {
+      const set1 = new HashSet('abc'.split(''))
+      const set2 = new HashSet('cde'.split(''))
+      const result = set1.union(set2)
+
+      const expected = new HashSet('abcde'.split(''))
+      assert.deepEqual(result, expected)
+    })
+  })
+
+  describe('intersect', function () {
+    it('Should make the intersection of sets and return new set', function () {
+      const set1 = new HashSet('abc'.split(''))
+      const set2 = new HashSet('cde'.split(''))
+      const result = set1.intersect(set2)
+
+      const expected = new HashSet([ 'c' ])
+      assert.deepEqual(result, expected)
+    })
+  })
+
+  describe('map', function () {
+    it('Should return mapped array of the elements', function () {
+      const set = new HashSet([ 'abc', 'ab', 'a' ])
+      const result = set.map(i => i.length).sort()
+
+      const expected = [ 3, 2, 1 ].sort()
+      assert.deepEqual(result, expected)
+    })
+  })
+
+  describe('filter', function () {
+    it('Should return fitlered array of the elements', function () {
+      const set = new HashSet([ 'abc', 'ab', 'a' ])
+      const result = set.filter(i => i.length > 1).sort()
+
+      const expected = [ 'abc', 'ab' ].sort()
+      assert.deepEqual(result, expected)
+    })
+  })
+
+  describe('equals', function () {
+    it('Should return true if sets are equal', function () {
+      const set1 = new HashSet([ 'abc', 'ab', 'a' ])
+      const set2 = new HashSet([ 'abc', 'ab', 'a' ])
+      let result = set1.equals(set2)
+      assert.equal(result, true)
+      result = set2.equals(set1)
+      assert.equal(result, true)
+
+      // remove element
+      set1.delete('abc')
+      result = set1.equals(set2)
+      assert.equal(result, false)
+    })
+  })
+
+  describe('diff', function () {
+    it('Should perform the difference operation', function () {
+      const set1 = new HashSet('abcd'.split(''))
+      const set2 = new HashSet('abc'.split(''))
+      const result = set1.diff(set2)
+
+      const expected = new HashSet([ 'd' ])
+      assert.deepEqual(result, expected)
+    })
+  })
+
+  describe('subsetOf', function () {
+    it('Should return true if set is a subset of other', function () {
+      const set1 = new HashSet('abc'.split(''))
+      const set2 = new HashSet('abcd'.split(''))
+      const result = set1.subsetOf(set2)
+      assert.equal(result, true)
+    })
+  })
+
+  describe('supersetOf', function () {
+    it('Should return true when set is superset of other', function () {
+      const set1 = new HashSet('abcde'.split(''))
+      const set2 = new HashSet('abc'.split(''))
+      const result = set1.supersetOf(set2)
+      assert.equal(result, true)
     })
   })
 })
