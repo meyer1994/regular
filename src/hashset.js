@@ -159,10 +159,11 @@ export default class HashSet {
    *
    * @param  {Function} fn Should return a value for each item.
    *
-   * @return {Array} Array of the mapped values.
+   * @return {HashSet} Array of the mapped values.
    */
   map (fn) {
-    return this.values().map(fn)
+    const res = this.values().map(fn)
+    return new HashSet(res)
   }
 
   /**
@@ -170,10 +171,11 @@ export default class HashSet {
    *
    * @param  {Function} fn Returns true or false for each item of the set.
    *
-   * @return {Array} Array of filtered items.
+   * @return {HashSet} Array of filtered items.
    */
   filter (fn) {
-    return this.values().filter(fn)
+    const res = this.values().filter(fn)
+    return new HashSet(res)
   }
 
   /**
@@ -230,6 +232,13 @@ export default class HashSet {
     return JSON.stringify(this._values)
   }
 
+  /**
+   * Returns true if at least one element returns true for the function.
+   *
+   * @param  {Function} fn Should return booleans for each item.
+   *
+   * @return {Boolean} True if one element returns True. False otherwise.
+   */
   some (fn) {
     return this.values().some(fn)
   }

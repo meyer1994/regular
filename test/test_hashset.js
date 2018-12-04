@@ -179,20 +179,20 @@ describe('HashSet', function () {
   describe('map', function () {
     it('Should return mapped array of the elements', function () {
       const set = new HashSet([ 'abc', 'ab', 'a' ])
-      const result = set.map(i => i.length).sort()
+      const result = set.map(i => i.length)
 
-      const expected = [ 3, 2, 1 ].sort()
-      assert.deepEqual(result, expected)
+      const expected = new HashSet([ 3, 2, 1 ])
+      assert.deepEqual(result._values, expected._values)
     })
   })
 
   describe('filter', function () {
     it('Should return fitlered array of the elements', function () {
       const set = new HashSet([ 'abc', 'ab', 'a' ])
-      const result = set.filter(i => i.length > 1).sort()
+      const result = set.filter(i => i.length > 1)
 
-      const expected = [ 'abc', 'ab' ].sort()
-      assert.deepEqual(result, expected)
+      const expected = new HashSet([ 'abc', 'ab' ])
+      assert.deepEqual(result._values, expected._values)
     })
   })
 
