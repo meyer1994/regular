@@ -144,6 +144,12 @@ describe('Automaton', function () {
         finals
       )
       assert.deepEqual(result, expected)
+
+      // Still works
+      let symbols = 'aa'.split('')
+      assert(automaton.match(symbols))
+      symbols = 'bb'.split('')
+      assert(!automaton.match(symbols))
     })
   })
 })
