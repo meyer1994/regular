@@ -110,4 +110,16 @@ export default class Automaton {
       return hasFinal.size > 0
     }
   }
+
+  isDeterministic () {
+    for (const state of this.states) {
+      for (const symbol of this.alphabet) {
+        const reach = this.reach([ state ], symbol)
+        if (reach.size > 1) {
+          return false
+        }
+      }
+    }
+    return true
+  }
 }

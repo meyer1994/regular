@@ -72,5 +72,12 @@ describe('Automaton', function () {
       const result = automaton.isDeterministic()
       assert.equal(result, false)
     })
+
+    it('Should return true if deterministic', function () {
+      const transition = new Transition('q0', 'a', 'q0')
+      automaton.transitions.delete(transition)
+      const result = automaton.isDeterministic()
+      assert.equal(result, true)
+    })
   })
 })
