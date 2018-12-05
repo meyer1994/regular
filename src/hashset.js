@@ -242,4 +242,12 @@ export default class HashSet {
   some (fn) {
     return this.values().some(fn)
   }
+
+  /**
+   * Iterator for the class.
+   */
+  [Symbol.iterator] () {
+    const values = this.values()
+    return values[Symbol.iterator]()
+  }
 }
