@@ -36,6 +36,12 @@ export default class Automaton {
    * @return {HashSet[String]} Set of states that can be reached with some symbol.
    */
   reach (states, symbol) {
+    const closure = this.epsilonClosure(states)
+    const reach = this._reach(closure, symbol)
+    return this.epsilonClosure(reach)
+  }
+
+  _reach (states, symbol) {
     let result = new HashSet()
     for (const state of states) {
       const reachableStates = this
@@ -62,7 +68,7 @@ export default class Automaton {
 
     while (stack.length > 0) {
       const currentStates = stack.pop()
-      const reach = this.reach(currentStates, Automaton.EPSILON)
+      const reach = this._reach(currentStates, Automaton.EPSILON)
 
       // Visited everyone already
       const notVisited = reach.diff(visited)
@@ -111,6 +117,11 @@ export default class Automaton {
     }
   }
 
+  /**
+   * Checks if the automaton is deterministic or not.
+   *
+   * @return {Boolean} True if deterministic. False otherwise.
+   */
   isDeterministic () {
     for (const state of this.states) {
       for (const symbol of this.alphabet) {
