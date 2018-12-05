@@ -193,4 +193,61 @@ export default class Automaton {
       newFinals
     )
   }
+
+  determinize () {
+    const start = this.epsilonClosure([ this.start ])
+
+    // New automaton parameters
+    let newStates = new HashSet()
+    const newAlphabet = this.alphabet
+    const newTransitions = new HashSet()
+    const newStart = start.values().sort().join()
+    const newFinals = new HashSet()
+
+    const stack = [ start ]
+    while (stack.length > 0) {
+      const fromStates = stack.pop()
+      const fromStatesName = fromStates.values().sort().join()
+
+      // State already processed
+      if (newStates.has(fromStates)) {
+        continue
+      }
+      // Add state
+      newStates.add(fromStates)
+
+      for (const symbol of this.alphabet) {
+        const reach = this.reach(fromStates, symbol)
+        if (reach.size === 0) {
+          break
+        }
+        stack.push(reach)
+
+        // Add transition
+        const stateName = reach.values().sort().join()
+        const trans = new Transition(fromStatesName, symbol, stateName)
+        newTransitions.add(trans)
+      }
+    }
+
+    // Add final states
+    for (const state of newStates) {
+      const finals = this.finals.intersect(state)
+      if (finals.size > 0) {
+        const stateName = state.values().sort().join()
+        newFinals.add(stateName)
+      }
+    }
+
+    // Convert states to strings
+    newStates = newStates.map(i => i.values().sort().join())
+
+    return new Automaton(
+      newStates,
+      newAlphabet,
+      newTransitions,
+      newStart,
+      newFinals
+    )
+  }
 }

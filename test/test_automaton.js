@@ -49,8 +49,6 @@ describe('Automaton', function () {
         new Transition('q3', 'b', 'q2'),
         new Transition('q3', 'b', 'q3')
       ])
-
-      console.log(result.values().sort())
       assert.deepEqual(result, expected)
     })
 
@@ -111,6 +109,41 @@ describe('Automaton', function () {
       const symbols = 'bb'.split('')
       const result = automaton.match(symbols)
       assert(!result)
+    })
+  })
+
+  describe('determinize', function () {
+    it('Should determinize the automaton', function () {
+      const states = new HashSet([
+        'q0,q2,q3',
+        'q1,q2,q3,q4',
+        'q0,q1,q2,q3',
+        'q4'
+      ])
+      const alphabet = new HashSet([ 'a', 'b' ])
+      const transitions = new HashSet([
+        new Transition('q0,q2,q3', 'a', 'q1,q2,q3,q4'),
+        new Transition('q0,q2,q3', 'b', 'q0,q1,q2,q3'),
+        new Transition('q1,q2,q3,q4', 'a', 'q4'),
+        new Transition('q1,q2,q3,q4', 'b', 'q0,q2,q3'),
+        new Transition('q0,q1,q2,q3', 'a', 'q1,q2,q3,q4'),
+        new Transition('q0,q1,q2,q3', 'b', 'q0,q1,q2,q3')
+      ])
+      const start = 'q0,q2,q3'
+      const finals = new HashSet([
+        'q1,q2,q3,q4',
+        'q4'
+      ])
+
+      const result = automaton.determinize()
+      const expected = new Automaton(
+        states,
+        alphabet,
+        transitions,
+        start,
+        finals
+      )
+      assert.deepEqual(result, expected)
     })
   })
 })
