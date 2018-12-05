@@ -224,7 +224,7 @@ export default class Automaton {
       for (const symbol of this.alphabet) {
         const reach = this.reach(fromStates, symbol)
         if (reach.size === 0) {
-          break
+          continue
         }
         stack.push(reach)
 
