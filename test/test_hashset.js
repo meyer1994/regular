@@ -258,4 +258,14 @@ describe('HashSet', function () {
       assert.equal(result, true)
     })
   })
+
+  describe('iterator', function () {
+    const set = new HashSet([ 1, 2, 3, 4 ])
+    const expected = new Set([ 1, 2, 3, 4 ])
+
+    for (const item of set) {
+      const result = expected.has(item)
+      assert.equal(result, true)
+    }
+  })
 })
