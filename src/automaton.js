@@ -194,6 +194,11 @@ export default class Automaton {
     )
   }
 
+  /**
+   * Performs the determinization of the automaton.
+   *
+   * @return {Automaton} New, equivalent, automaton that is deterministic.
+   */
   determinize () {
     const start = this.epsilonClosure([ this.start ])
 
