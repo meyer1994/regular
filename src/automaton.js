@@ -1,4 +1,5 @@
 import HashSet from './hashset'
+import Transition from './transition'
 
 export default class Automaton {
   /**
@@ -132,5 +133,43 @@ export default class Automaton {
       }
     }
     return true
+  }
+
+  removeEpsilon () {
+    // New automaton parameters
+    const newStates = this.states
+    const newAlphabet = this.alphabet
+    let newTransitions = new HashSet()
+    const newStart = this.start
+    const newFinals = new HashSet()
+
+    for (const state of this.states) {
+      for (const symbol of this.alphabet) {
+        const reach = this.reach([ state ], symbol)
+        for (const stateTo of reach) {
+          const t = new Transition(state, symbol, stateTo)
+          newTransitions.add(t)
+        }
+      }
+    }
+
+    // Epsilon transitions
+    const epsilon = this
+      .transitions
+      .filter(i => i.symbol === Automaton.EPSILON)
+
+    // Add non epsilon transitions to newTransitions
+    newTransitions = this
+      .transitions
+      .diff(epsilon)
+      .union(newTransitions)
+
+    return new Automaton(
+      newStates,
+      newAlphabet,
+      newTransitions,
+      newStart,
+      newFinals
+    )
   }
 }

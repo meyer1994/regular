@@ -122,10 +122,12 @@ describe('Automaton', function () {
           new Transition('q2', 'b', 'q2'),
           new Transition('q2', 'b', 'q3'),
           new Transition('q3', 'a', 'q4'),
-          new Transition('q3', 'a', 'q0'),
-          new Transition('q3', 'a', 'q2'),
-          new Transition('q3', 'a', 'q3')
+          new Transition('q3', 'b', 'q0'),
+          new Transition('q3', 'b', 'q2'),
+          new Transition('q3', 'b', 'q3')
         ])
+
+        console.log(result.values().sort())
         assert.deepEqual(result, expected)
       })
     })
