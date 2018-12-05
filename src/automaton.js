@@ -1,6 +1,8 @@
 import HashSet from './hashset'
 import Transition from './transition'
 
+const EPSILON = '&'
+
 export default class Automaton {
   /**
    * Constructor of an automaton.
@@ -22,13 +24,6 @@ export default class Automaton {
   }
 
   /**
-   * Epsilon symbol.
-   */
-  static get EPSILON () {
-    return '&'
-  }
-
-  /**
    * Gets the closure of a set of states with some symbol
    *
    * @param  {Iterable[String]} states States to start the clousre from.
@@ -42,6 +37,16 @@ export default class Automaton {
     return this.epsilonClosure(reach)
   }
 
+  /**
+   * Auxiliary function.
+   *
+   * It gets the directly reachable states with some symbol.
+   *
+   * @param  {Iterable[String]} states Set of states get the reach of.
+   * @param  {String} symbol Symbol to check for transitions.
+   *
+   * @return {HashSet[String]} Set of reachable states.
+   */
   _reach (states, symbol) {
     let result = new HashSet()
     for (const state of states) {
@@ -56,11 +61,12 @@ export default class Automaton {
   }
 
   /**
-   * Returns epsilo closure of an array of states.
+   * Returns epsilon closure of an array of states.
    *
    * @param  {Iterable[String]} states States to get epsilon closure of.
    *
-   * @return {HashSet[String]} Set of reachable states through epsilon transistions.
+   * @return {HashSet[String]} Set of reachable states through epsilon
+   *                           transistions.
    */
   epsilonClosure (states) {
     // Every state visits itself with epsilon transitions
@@ -69,7 +75,7 @@ export default class Automaton {
 
     while (stack.length > 0) {
       const currentStates = stack.pop()
-      const reach = this._reach(currentStates, Automaton.EPSILON)
+      const reach = this._reach(currentStates, EPSILON)
 
       // Visited everyone already
       const notVisited = reach.diff(visited)
@@ -94,26 +100,25 @@ export default class Automaton {
    */
   match (symbols) {
     let index = 0
-    const start = [ this.start ]
-    const stack = [ this.epsilonClosure(start) ]
+    // Recursion stack
+    const start = this.epsilonClosure([ this.start ])
+    const stack = [ start ]
 
     while (stack.length > 0) {
       const symbol = symbols[index++]
       const states = stack.pop()
 
       // Get transitions from current states with the current symbol
-      const closure = this.epsilonClosure(states)
-      const reach = this.reach(closure, symbol)
-      const reachClosure = this.epsilonClosure(reach)
+      const reach = this.reach(states, symbol)
 
       // If not at end of input, continue
       if (index !== symbols.length) {
-        stack.push(reachClosure)
+        stack.push(reach)
         continue
       }
 
-      // At end of input
-      const hasFinal = reachClosure.intersect(this.finals)
+      // At the end of input, if there is a final state in reachable states
+      const hasFinal = reach.intersect(this.finals)
       return hasFinal.size > 0
     }
   }
@@ -121,13 +126,20 @@ export default class Automaton {
   /**
    * Checks if the automaton is deterministic or not.
    *
+   * An automaton is deterministic if, for every state there is, at most, one
+   * transition per alphabet symbol.
+   *
    * @return {Boolean} True if deterministic. False otherwise.
    */
   isDeterministic () {
+    // If there is a state
     for (const state of this.states) {
+      // That with one symbol
       for (const symbol of this.alphabet) {
         const reach = this.reach([ state ], symbol)
+        // Can reach more than one state
         if (reach.size > 1) {
+          // It is non deterministic
           return false
         }
       }
@@ -149,26 +161,23 @@ export default class Automaton {
     const newStart = this.start
     const newFinals = this.finals
 
+    // For each state
     for (const state of this.states) {
+      // For each symbol
       for (const symbol of this.alphabet) {
+        // Get the reach of state with that symbol
         const reach = this.reach([ state ], symbol)
-        for (const stateTo of reach) {
-          const t = new Transition(state, symbol, stateTo)
-          newTransitions.add(t)
-        }
+        // Creates new transitions
+        const newTrans = reach.map(to => new Transition(state, symbol, to))
+        newTransitions = newTransitions.union(newTrans)
       }
     }
 
-    // Epsilon transitions
-    const epsilon = this
-      .transitions
-      .filter(i => i.symbol === Automaton.EPSILON)
+    // Epsilonless transitions
+    const epsilonLess = this.transitions.filter(i => i.symbol !== EPSILON)
 
     // Add non epsilon transitions to newTransitions
-    newTransitions = this
-      .transitions
-      .diff(epsilon)
-      .union(newTransitions)
+    newTransitions = epsilonLess.union(newTransitions)
 
     return new Automaton(
       newStates,
