@@ -30,14 +30,14 @@ export default class Automaton {
   /**
    * Gets the closure of a set of states with some symbol
    *
-   * @param  {HashSet[String]} states States to start the clousre from.
+   * @param  {Iterable[String]} states States to start the clousre from.
    * @param  {String} symbol String with the symbol.
    *
    * @return {HashSet[String]} Set of states that can be reached with some symbol.
    */
   reach (states, symbol) {
     let result = new HashSet()
-    for (const state of states.values()) {
+    for (const state of states) {
       const reachableStates = this
         .transitions
         .filter(i => i.from === state)
@@ -51,13 +51,13 @@ export default class Automaton {
   /**
    * Returns epsilo closure of an array of states.
    *
-   * @param  {HashSet[String]} states States to get epsilon closure of.
+   * @param  {Iterable[String]} states States to get epsilon closure of.
    *
    * @return {HashSet[String]} Set of reachable states through epsilon transistions.
    */
   epsilonClosure (states) {
     // Every state visits itself with epsilon transitions
-    let visited = new HashSet(states.values())
+    let visited = new HashSet(states)
     const stack = [ states ]
 
     while (stack.length > 0) {
@@ -87,7 +87,7 @@ export default class Automaton {
    */
   match (symbols) {
     let index = 0
-    const start = new HashSet([ this.start ])
+    const start = [ this.start ]
     const stack = [ this.epsilonClosure(start) ]
 
     while (stack.length > 0) {

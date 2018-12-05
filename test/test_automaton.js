@@ -66,4 +66,11 @@ describe('Automaton', function () {
       }
     })
   })
+
+  describe('isDeterministic', function () {
+    it('Should return false if non deterministic', function () {
+      const result = automaton.isDeterministic()
+      assert.equal(result, false)
+    })
+  })
 })
