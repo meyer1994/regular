@@ -1,8 +1,6 @@
 import HashSet from './hashset'
 import Transition from './transition'
 
-const EPSILON = '&'
-
 export default class Automaton {
   /**
    * Constructor of an automaton.
@@ -21,6 +19,14 @@ export default class Automaton {
     this.transitions = transitions
     this.start = start
     this.finals = finals
+  }
+
+  static get EPSILON () {
+    return '&'
+  }
+
+  get EPSILON () {
+    return Automaton.EPSILON
   }
 
   /**
@@ -75,7 +81,7 @@ export default class Automaton {
 
     while (stack.length > 0) {
       const currentStates = stack.pop()
-      const reach = this._reach(currentStates, EPSILON)
+      const reach = this._reach(currentStates, this.EPSILON)
 
       // Visited everyone already
       const notVisited = reach.diff(visited)
@@ -174,7 +180,7 @@ export default class Automaton {
     }
 
     // Epsilonless transitions
-    const epsilonLess = this.transitions.filter(i => i.symbol !== EPSILON)
+    const epsilonLess = this.transitions.filter(i => i.symbol !== this.EPSILON)
 
     // Add non epsilon transitions to newTransitions
     newTransitions = epsilonLess.union(newTransitions)
