@@ -130,6 +130,14 @@ describe('Automaton', function () {
         console.log(result.values().sort())
         assert.deepEqual(result, expected)
       })
+
+      it('Should recognize same sequences', function () {
+        const input = [ 'a', 'b', 'b', 'a' ]
+        assert(automaton.match(input))
+
+        const epsilonLess = automaton.removeEpsilon()
+        assert(epsilonLess.match(input))
+      })
     })
 
     describe('epsilonClosure', function () {
@@ -149,6 +157,13 @@ describe('Automaton', function () {
         result = automaton.reach([ 'q0' ], 'b')
         expected = new HashSet([ 'q0', 'q1', 'q2', 'q3' ])
         assert(result.equals(expected))
+      })
+    })
+
+    describe('isDeterministic', function () {
+      it('Should return false', function () {
+        const result = automaton.isDeterministic()
+        assert(!result)
       })
     })
   })

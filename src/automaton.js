@@ -135,13 +135,19 @@ export default class Automaton {
     return true
   }
 
+  /**
+   * Removes epsilon transitions and returns new automaton.
+   *
+   * @return {Automaton} Automaton equivalent to this one but without epsilon
+   *                     transitions.
+   */
   removeEpsilon () {
     // New automaton parameters
     const newStates = this.states
     const newAlphabet = this.alphabet
     let newTransitions = new HashSet()
     const newStart = this.start
-    const newFinals = new HashSet()
+    const newFinals = this.finals
 
     for (const state of this.states) {
       for (const symbol of this.alphabet) {
