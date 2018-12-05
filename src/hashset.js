@@ -229,7 +229,7 @@ export default class HashSet {
    * @return {String} JSON string of _values.
    */
   toString () {
-    return JSON.stringify(this._values)
+    return JSON.stringify(this.values().sort())
   }
 
   /**

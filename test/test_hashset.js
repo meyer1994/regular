@@ -243,9 +243,10 @@ describe('HashSet', function () {
 
   describe('toString', function () {
     it('Should return string representation of set', function () {
-      const set = new HashSet([ 1, 2, 'a' ])
+      const input = [ 1, 2, 'a' ]
+      const set = new HashSet(input)
       const result = set.toString()
-      const expected = JSON.stringify({ 1: 1, 2: 2, a: 'a' })
+      const expected = JSON.stringify(input)
       assert.deepEqual(result, expected)
     })
   })
