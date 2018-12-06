@@ -245,4 +245,13 @@ export default class Automaton {
       newFinals
     )
   }
+
+  /**
+   * Checks if the automaton does not recognize anything.
+   *
+   * @return {Boolean} True if it is an empty automaton. False othwerise.
+   */
+  empty () {
+    return this.finals.size < 1
+  }
 }
