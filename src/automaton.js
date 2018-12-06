@@ -105,28 +105,18 @@ export default class Automaton {
    * @return {Boolean} True if it is accepted. False otherwise.
    */
   match (symbols) {
-    let index = 0
     // Recursion stack
     const start = this.epsilonClosure([ this.start ])
-    const stack = [ start ]
+    let states = start
 
-    while (stack.length > 0) {
-      const symbol = symbols[index++]
-      const states = stack.pop()
-
-      // Get transitions from current states with the current symbol
-      const reach = this.reach(states, symbol)
-
-      // If not at end of input, continue
-      if (index !== symbols.length) {
-        stack.push(reach)
-        continue
-      }
-
-      // At the end of input, if there is a final state in reachable states
-      const hasFinal = reach.intersect(this.finals)
-      return hasFinal.size > 0
+    // Ride through automaton
+    for (const symbol of symbols) {
+      states = this.reach(states, symbol)
     }
+
+    // If there is a final state in reachable states
+    const finalStates = states.intersect(this.finals)
+    return finalStates.size > 0
   }
 
   /**
