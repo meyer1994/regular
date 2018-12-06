@@ -4,7 +4,7 @@
   "description": "[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![Build Status](https://travis-ci.org/meyer1994/regular.svg?branch=dev)](https://travis-ci.org/meyer1994/regular) [![codecov](https://codecov.io/gh/meyer1994/regular/branch/dev/graph/badge.svg)](https://codecov.io/gh/meyer1994/regular)",
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha --require @babel/register",
+    "test": "nyc mocha -S --require @babel/register",
     "lint": "standard --env mocha"
   },
   "repository": {
