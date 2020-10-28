@@ -24,7 +24,7 @@
     "@babel/register": "^7.12.1",
     "mocha": "^8.2.0",
     "nyc": "^15.1.0",
-    "standard": "^15.0.0"
+    "standard": "^15.0.1"
   },
   "dependencies": {},
   "standard": {
