@@ -22,7 +22,7 @@
     "@babel/core": "^7.12.13",
     "@babel/preset-env": "^7.12.13",
     "@babel/register": "^7.12.13",
-    "mocha": "^8.2.1",
+    "mocha": "^8.3.0",
     "nyc": "^15.1.0",
     "standard": "^16.0.3"
   },
