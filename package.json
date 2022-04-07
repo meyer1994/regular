@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/meyer1994/regular#readme",
   "devDependencies": {
-    "@babel/core": "^7.17.8",
+    "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.7",
     "mocha": "^9.2.2",
