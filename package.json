@@ -21,7 +21,7 @@
   "devDependencies": {
     "@babel/core": "^7.23.7",
     "@babel/preset-env": "^7.23.8",
-    "@babel/register": "^7.22.15",
+    "@babel/register": "^7.23.7",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "standard": "^17.1.0"
